@@ -3,6 +3,7 @@ import './App.css'
 import LinkCards from './components/LinkCards';
 import PeerNet from './peer';
 import PeerConnector from './components/PeerConnector';
+import DialogModal from './components/PeerPostLink';
 
 
 
@@ -10,7 +11,7 @@ function App() {
     const [rawJson,setRawJson] = useState(localStorage.getItem('peer-net/data')||'{}')
     const [upvotes,setupvotes] = useState<any[]>([]);
     const [downvotes,setDownvotes] = useState<any[]>([]);
-    const [connectedPeers,setPeers] = useState<any[]>([])
+    const [peers,setPeers] = useState<any[]>([])
     const [savedPeers,setSavedPeers] = useState<any[]>([])
     const [blockPeers,setBlockedPeers] = useState<any[]>([])
     const [__PEER_ID,set__PEER_ID] = useState<string>('');
@@ -19,7 +20,38 @@ function App() {
     const [dataloaded,setDataLoaded]= useState(false);
     const [PEERNET,setPeerNet]:any = useState({});
     const [hovered_link,setHoveredLink] = useState('');
+    const [isOpened, setIsOpened] = useState(false);
+    const [newTitle,setNewTitle]=useState('');
+    const [newLink,setNewLink]=useState('');
+    const [newImage,setNewImage]=useState('');
+    const [newText,setNewText]=useState('');
+    const clear_post = ()=>{
 
+        setNewImage('');
+        setNewLink('');
+        setNewText('');
+        setNewTitle('');
+    }
+    const onProceed = () => {
+        console.log("Proceed clicked");
+        console.log(newText,newTitle,newImage,newLink);
+        const post = {
+            title:newTitle,
+            link:newLink,
+            image:newImage,
+            text:newText
+        }
+        setupvotes(prev=>{
+            prev.push(post)
+            return prev;
+        })
+        clear_post();
+        PEERNET.notify(post);
+      };
+    const onClose=()=>{
+        setIsOpened(false);
+        clear_post();
+    }
     useEffect(()=>{
         const data = JSON.parse(rawJson);
         setupvotes(data.upvotes);
@@ -50,19 +82,19 @@ function App() {
         }
     },[upvotes,PEERNET])
     useEffect(()=>{
-        setRawJson(JSON.stringify({upvotes,downvotes,savedPeers,connectedPeers,blockPeers,__PEER_ID}));
-    },[upvotes,downvotes,savedPeers,connectedPeers,blockPeers,__PEER_ID])
+        setRawJson(JSON.stringify({upvotes,downvotes,savedPeers,peers,blockPeers,__PEER_ID}));
+    },[upvotes,downvotes,savedPeers,peers,blockPeers,__PEER_ID])
     useEffect(() => {
         localStorage.setItem('peer-net/data', rawJson);
     }, [rawJson]);
-    const handlePeerChange = (peerID:string,flag:boolean)=>{
+    const handlePeerChange = (peer:any,flag:boolean)=>{
         flag?
         setSavedPeers((prev)=>{
-            const next = Array.from(new Set([...prev,peerID]))
+            const next = Array.from(new Set([...prev,peer]))
             return next;
         }):
         setSavedPeers((prev)=>{
-            prev.filter(x=>x!==peerID)
+            prev.filter(x=>x!==peer)
             return prev;
         })
         
@@ -102,7 +134,37 @@ function App() {
  
             <h1>peer net</h1>
             <h3>{PEERNET?.id}</h3>
-            <div>show downvoted items:
+
+            <div>
+            <button onClick={() => setIsOpened(true)}>new post</button>
+
+                <DialogModal 
+                title="Add link"
+                isOpened={isOpened}
+                onProceed={onProceed}
+                onClose={onClose}>
+                    <div className="newForm">
+
+                   <div className="inputDiv">
+                    <label> title</label>
+                    <input className='newTitle' value={newTitle} onChange={(e)=>setNewTitle(e.target.value)}></input>
+                    </div> 
+                    <div className="inputDiv">
+                    <label> link</label>
+                    <input className="newLink" value={newLink} onChange={(e)=>setNewLink(e.target.value)}></input>
+                    </div> 
+                    <div className="inputDiv">
+                    <label> image-URL</label>
+                    <input className="newImage" value={newImage} onChange={(e)=>setNewImage(e.target.value)}></input>
+                    </div> 
+                    <div className="inputDiv">
+                    <label> text</label>
+                    <textarea className="newText" value={newText} onChange={(e)=>setNewText(e.target.value)}></textarea>
+                    </div> 
+
+                    </div>
+                </DialogModal>
+                show downvoted items:
                 <input type="checkbox" checked={show_downvotes} onChange={(e)=>setShowDownvotes(e.target.checked)}></input>
             </div>
             <div className='main-container'>
@@ -146,7 +208,7 @@ function App() {
             />
             :null}
             </div>
-        <PeerConnector props={{peers:connectedPeers,handleChange:handlePeerChange}}/>
+        <PeerConnector props={{peers,handleChange:handlePeerChange}}/>
         </div>
     )
 }

@@ -1,8 +1,9 @@
 function PeerCard(props:any) {
     const peer = props.props.peer;
     const handleChange = props.props.handleChange;
-    
-    return (<div className={`Peer-Card`}> 
+    console.log("peer",peer);
+
+    return (<div className={`Peer-Card ${peer?.peerConnection?.connectionState}`}> 
             
                 <button 
                 className="Keep-Btn"
@@ -13,7 +14,7 @@ function PeerCard(props:any) {
                 </button>
                 <span 
                 className="Peer-text">
-                    {peer};
+                    {peer.peer};
                 </span>
                 <button 
                 className="Remove-Btn"

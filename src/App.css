@@ -123,3 +123,47 @@
     border-style: inset;
     border-width: 1rem;
 }
+
+.inputDiv{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    display:flex;
+    width:80%;
+    padding:3rem;
+    flex-flow:column;
+
+}
+.newForm{
+    font-size:3.5rem;
+    display:flex;
+    flex-flow:column nowrap;
+    justify-items:center;
+    align-items: center;
+    border:1rem dotted green;
+    border-radius: 4rem;
+    background-color: rgba(64, 146, 67, 0.607);
+    color:rgb(3, 118, 3);
+}
+.inputDiv>label{
+    border:solid rgb(0, 255, 47);
+    border-radius: 3rem;
+    padding-block:.5rem;
+    padding-inline:1rem;
+    align-items: start;
+    display:flex;
+    align-self: start;
+    background-color: #d6badf;
+    color:black;
+}
+.inputDiv>input{
+    font-size: 4rem;
+    height:10rem;
+    width:80%;
+}
+.inputDiv>textarea{
+    font-size: 4rem;
+
+    height:10rem;
+    width:80%;
+}

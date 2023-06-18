@@ -1,6 +1,5 @@
 import {Peer} from 'peerjs';
 import Get_Shuffled from './utils/shuffle';
-import { useEffect } from 'react';
 
 function CreatePeer(id:string, callback:any){
     let peer = new Peer(id);
@@ -47,21 +46,30 @@ class PeerNet{
     }
     updatePeers(peers:any[],source:string){
         console.log("peers data from ",source);
+        const newPeers=peers.map(x=>({peer:x?.peer,connected:x?.peerConnection?.connectionStatus}))
         this.setPeers((prev:any)=>{
-            const next= Array.from(new Set([...prev,...peers])).filter(x=>x!==this.id);
+            const next= Array.from(new Set([...prev,...newPeers])).filter(x=>x.peer!==this.id&&x.peer);
             this.table=peers;
             return next;
         })
     }
+    connectNewPeer(p:any){
+        console.log("new peer heard");
+        const peer = {peer:p,connected:true}
+        this.setPeers((prev:any)=>{
+            const next= Array.from(new Set([...prev,peer])).filter(x=>x.peer!==this.id&&x.peer);
+            this.table=next;
+            return next;
+        })
+    }
     init(init_host:string){
-        if(init_host==this.id) throw "configuring boot node";
-        else this.table.push(init_host);
+        if(init_host!=this.id)this.table.push(init_host);
     }
     connect_to_peer(id:string){
         const conn = this.peer.connect(id);
         conn.on("open",()=>{
             console.log("connected to peer");
-            this.pool = Array.from(new Set([...this.pool,conn]))
+            this.updatePeers([conn],id);
             this.ConSends(conn);
             this.ConReceives(conn,id);
         })
@@ -77,7 +85,7 @@ class PeerNet{
     }
     ConReceives(conn:any,id:string){
 
-            conn.on('data',(data:any)=>{
+            conn.on('data',async(data:any)=>{
                 if(data.key=="peers"){
                     console.log("peers data from",id);
                     this.updatePeers(data.peers,id)
@@ -91,11 +99,29 @@ class PeerNet{
                 if(data.key=="get_feed"){
                 console.log("get feed called")
                 conn.send({key:"feed",feed:this.feed});
-            }else if(data.key=="get_peers"){
+                }
+                if(data.key=="get_peers"){
                 const peers = Get_Shuffled(this.table,100);
                 conn.send({key:"peers",peers});
-            }
+                }
+                if(data.key=="notify"){
+                    console.log("notification heard")
+                    if(await this.isNew(data.post)){
+                        this.push_to_feed(data);
+                        this.notify(data)
+                    }
+                }
         })
+    }
+    async isNew(post:any){
+        const rawJson = localStorage.getItem('peer-net/data')||'{upvotes:[{"link":""}]}';
+        const data = JSON.parse(rawJson);
+        return data.upvotes.every((x:any)=>x.link!=post.link)&&
+        data.downvotes.every((x:any)=>x.link!=post.link)&&
+        data.feed.every((x:any)=>x.link!=post.link)
+    }
+    push_to_feed(data:any){
+        this.updateFeed([data.post],data.source)
     }
     ConSends(conn:any){
         console.log("sending ")
@@ -105,28 +131,27 @@ class PeerNet{
     }
     connect(){
         console.log("start");
-        try{
-            if(this.table.length==0)this.init((import.meta.env.VITE_PEER0||""));
-            console.log("peers:",this.table.length);
-            let peer:any = CreatePeer(this.id,()=>{
-                this.peer=peer;
+        if(this.table.length==0)this.init((import.meta.env.VITE_PEER0||""));
+        console.log("peers:",this.table.length);
+        let peer:any = CreatePeer(this.id,()=>{
+            this.peer=peer;
+            try{
                 for(const id of this.table){
                     this.connect_to_peer(id);
                     
                 }   
-            });
-        }catch(e){
-            console.log(e);
-            let peer:any = CreatePeer(this.id,()=>{
-                this.peer=peer;
+            }catch(e){
+                console.log(e);
+                console.log("con heard in boot node")
+            }
                 peer.on('connection',(conn:any)=>{
-                    console.log("con heard in boot node",{conn:conn.peer})
                     this.ConReceives(conn,conn.peer);
                     if(conn.peer.startsWith('peer-')) this.updatePeers([conn.peer],conn.peer);
                     console.log("this table",this.table);
                 })
+        
             })
-        }
+        
         
     } 
     getPeers(saved_table:string[]){
@@ -134,8 +159,18 @@ class PeerNet{
     }
     clearPeers(setPeers:any){
         this.table=[];
-        this.pool=[];
         setPeers([]);
+    }
+    notify(post:any){
+        console.log("notification sending")
+
+        for(const id of this.table){
+            const conn = this.peer.connect(id);
+                conn.on("connection",(conn:any)=>{
+                    conn.send({key:"notify",post,source:this.id})
+                })
+            
+        }
     }
 
 }
