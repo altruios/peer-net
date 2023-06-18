@@ -46,7 +46,7 @@ class PeerNet{
         console.log("peers data from ",source,peers);
         const newPeers=peers.map(x=>(
             {peer:x?.peer,
-            connected:x?.peerConnection?.connectionStatus
+            connected:true
         })
         )
         this.setPeers((prev:any)=>{
@@ -57,7 +57,7 @@ class PeerNet{
         })
     }
     connectNewPeer(p:any){
-        console.log("new peer heard");
+        console.log("new peer heard",p);
         const peer = {peer:p,connected:true}
         this.setPeers((prev:any)=>{
             const next= Array.from(new Set([...prev,peer])).filter(x=>x.peer!==this.id&&x.peer);
@@ -79,13 +79,29 @@ class PeerNet{
         })
         conn.on("error",(e:any)=>{
             console.log(e,"is error")
+            this.updateConnStatus(conn,false);
         })
         conn.on("close",(e:any)=>{
             console.log("e,",e,"closed");
+            this.updateConnStatus(conn,false);
+
         });   
         conn.on("disconnect",(e:any)=>{
             console.log("e,",e,"disconnected");
+            this.updateConnStatus(conn,false);
+
         });
+    }
+    updateConnStatus(conn:any,state:boolean){
+        this.setPeers((prev:any)=>{
+            const found = prev.find((x:any)=>x.peer==conn.peer);
+            if(found){
+                const replacement:any = {peer:found.peer,state};
+                const next = prev.map((x:any,i:number,arr:any[])=>arr[i].peer==replacement.peer?replacement:x)
+                return next;
+            }
+            return prev;
+        })
     }
     ConReceives(conn:any,id:string){
 
@@ -129,9 +145,27 @@ class PeerNet{
     }
     ConSends(conn:any){
         console.log("sending ")
+        this.get_peers(conn);
+        this.get_feed(conn);
+    }
+    get_peers(conn:any){
+        conn.send({key:"get_peers"});
 
-        conn.send({key:"get_peers"})
-        conn.send({key:"get_feed"});
+    }
+    get_feed(){
+        console.log(this.peer); 
+        const feed:any[]=[];
+        console.log(this.table,"?is table");
+        for(const peer in this.table){
+            const conn = this.peer.connect(peer.peer);
+            conn.send({key:"get_feed"});
+            conn.on("data",(data:any)=>{
+
+                console.log("abced")
+                console.log("conn",data);
+            })
+        }
+
     }
     connect(){
         console.log("start");

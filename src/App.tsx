@@ -25,6 +25,10 @@ function App() {
     const [newLink,setNewLink]=useState('');
     const [newImage,setNewImage]=useState('');
     const [newText,setNewText]=useState('');
+    const getFeed=()=>{
+        console.log("this triggers");
+        PEERNET.get_feed()
+    }
     const clear_post = ()=>{
 
         setNewImage('');
@@ -166,6 +170,7 @@ function App() {
                 </DialogModal>
                 show downvoted items:
                 <input type="checkbox" checked={show_downvotes} onChange={(e)=>setShowDownvotes(e.target.checked)}></input>
+                <button className='btn' onClick={getFeed}>get feed</button>
             </div>
             <div className='main-container'>
             <LinkCards 
