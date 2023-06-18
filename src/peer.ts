@@ -8,17 +8,15 @@ function CreatePeer(id:string, callback:any){
 }
 class PeerNet{
     peer:any;
-    pool:any[];
     id:string;
     feed:any[];
-    table:string[];
+    table:any[];
     setFeed:any;
     setPeers:any;
     constructor(feed:any[],saved_id:string, setFeed:any,setPeers:any){
         this.id = import.meta.env.VITE_PEERID||saved_id||`peer-${crypto.randomUUID()}`;
         console.log(this.id,"is id")
         this.table = [];
-        this.pool=[];
         this.feed=feed;
         console.log(this.feed);
         this.peer=null;
@@ -45,11 +43,16 @@ class PeerNet{
         console.log(this.feed);
     }
     updatePeers(peers:any[],source:string){
-        console.log("peers data from ",source);
-        const newPeers=peers.map(x=>({peer:x?.peer,connected:x?.peerConnection?.connectionStatus}))
+        console.log("peers data from ",source,peers);
+        const newPeers=peers.map(x=>(
+            {peer:x?.peer,
+            connected:x?.peerConnection?.connectionStatus
+        })
+        )
         this.setPeers((prev:any)=>{
-            const next= Array.from(new Set([...prev,...newPeers])).filter(x=>x.peer!==this.id&&x.peer);
-            this.table=peers;
+            const next = newPeers.filter(x=>prev.peer!=x.peer);
+            console.log("next is",next,newPeers);
+            this.table=next;
             return next;
         })
     }
@@ -63,10 +66,11 @@ class PeerNet{
         })
     }
     init(init_host:string){
-        if(init_host!=this.id)this.table.push(init_host);
+        if(init_host!=this.id)this.table.push({peer:init_host,connected:true});
     }
     connect_to_peer(id:string){
         const conn = this.peer.connect(id);
+        console.log(id,"is id of connection")
         conn.on("open",()=>{
             console.log("connected to peer");
             this.updatePeers([conn],id);
@@ -136,17 +140,18 @@ class PeerNet{
         let peer:any = CreatePeer(this.id,()=>{
             this.peer=peer;
             try{
-                for(const id of this.table){
-                    this.connect_to_peer(id);
-                    
+                for(const t of this.table){
+                    console.log("connecting")
+                    this.connect_to_peer(t.peer);
                 }   
             }catch(e){
                 console.log(e);
                 console.log("con heard in boot node")
             }
                 peer.on('connection',(conn:any)=>{
+                    console.log("connection heard");
                     this.ConReceives(conn,conn.peer);
-                    if(conn.peer.startsWith('peer-')) this.updatePeers([conn.peer],conn.peer);
+                    if(conn.peer.startsWith('peer-')) this.updatePeers([conn],conn.peer);
                     console.log("this table",this.table);
                 })
         
@@ -164,8 +169,8 @@ class PeerNet{
     notify(post:any){
         console.log("notification sending")
 
-        for(const id of this.table){
-            const conn = this.peer.connect(id);
+        for(const t of this.table){
+            const conn = this.peer.connect(t.peer);
                 conn.on("connection",(conn:any)=>{
                     conn.send({key:"notify",post,source:this.id})
                 })
