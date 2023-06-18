@@ -99,11 +99,15 @@ class PeerNet{
             let peer:any = CreatePeer(this.id,()=>{
                 this.peer=peer;
                 peer.on('connection',(conn:any)=>{
-                    console.log("con heard in boot node",conn.peer)
-                    console.log(conn.peer,"is peer");
+                    console.log("this table",this.table);
+
+                    console.log("con heard in boot node",{conn:conn.peer})
+                    if(conn.peer.startsWith('peer-')) this.updatePeers([conn.peer],conn.peer);
+                    console.log("this table",this.table);
                     conn.on('data',(data:any)=>{
                         if(data.key=="peers"){
                             this.updatePeers(data.peers,conn.peer);
+
                             if(this.getPeers([]).length<100)this.getMorePeers();
                         }
                         if(data.key=="feed"){
@@ -119,8 +123,8 @@ class PeerNet{
                     })
                     conn.on("error",(e:any)=>{
                         console.log(e,"is error")
-                })                           
-            })
+                    })                           
+                })
             })
         }
         

@@ -39,8 +39,8 @@ function App() {
     const handlePeerChange = (peerID:string,flag:boolean)=>{
         flag?
         setSavedPeers((prev)=>{
-            prev.push(peerID);
-            return prev;
+            const next = Array.from(new Set([...prev,peerID]))
+            return next;
         }):
         setSavedPeers((prev)=>{
             prev.filter(x=>x!==peerID)
