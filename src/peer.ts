@@ -10,20 +10,22 @@ class PeerNet{
     peer:any;
     pool:any[];
     id:string;
-    feed:string[];
+    feed:any[];
     table:string[];
     setFeed:any;
     setPeers:any;
-    constructor(feed:string[],saved_id:string, updateFeed:any,updatePeers:any){
+    constructor(feed:any[],saved_id:string, setFeed:any,setPeers:any){
         this.id = import.meta.env.VITE_PEERID||saved_id||`peer-${crypto.randomUUID()}`;
         console.log(this.id,"is id")
         this.table = [];
         this.pool=[];
         this.feed=feed;
+        console.log(this.feed);
         this.peer=null;
-        this.setFeed=updateFeed;
-        this.setPeers=updatePeers;
+        this.setFeed=setFeed;
+        this.setPeers=setPeers;
     }
+
     filterFeed(feed:any[]){
         const raw = localStorage.getItem("peer-net/data")||'';
         const parsed = JSON.parse(raw)
@@ -82,6 +84,7 @@ class PeerNet{
                                 this.updateFeed(new_feed,id);
                             }
                             if(data.key=="get_feed"){
+                                console.log("get feed called")
                                 conn.send({key:"feed",feed:this.feed});
                             }else if(data.key=="get_peers"){
                                 const peers = Get_Shuffled(this.table,100);
@@ -111,10 +114,13 @@ class PeerNet{
                             if(this.getPeers([]).length<100)this.getMorePeers();
                         }
                         if(data.key=="feed"){
-                            const new_feed = this.filterFeed(data.feed);
+                            console.log("feed,",data.feed);
+                            const new_feed = this.filterFeed(data.feed||[]);
                             this.updateFeed(new_feed,conn.peer)
                         }
                         if(data.key=="get_feed"){
+                            console.log("feeding this one this:",this.feed)
+                            console.log(this.feed,"is feed");
                             conn.send({key:"feed",feed:this.feed});
                         }else if(data.key=="get_peers"){
                             const peers = Get_Shuffled(this.table,100);

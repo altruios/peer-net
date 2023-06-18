@@ -16,20 +16,38 @@ function App() {
     const [__PEER_ID,set__PEER_ID] = useState<string>('');
     const [show_downvotes,setShowDownvotes]=useState<boolean>(false);
     const [feed,updateFeed]= useState([]);
-    const [PEERNET,setPeerNet]:Array<any> = useState({});
+    const [dataloaded,setDataLoaded]= useState(false);
+    const [PEERNET,setPeerNet]:any = useState({});
     const [hovered_link,setHoveredLink] = useState('');
+
     useEffect(()=>{
         const data = JSON.parse(rawJson);
-        setupvotes(data.upvotes||[]);
-        setDownvotes(data.downvotes||[]);
-        const p = new PeerNet(upvotes,data.__PEER_ID,updateFeed,setPeers);
+        setupvotes(data.upvotes);
+        setDownvotes(data.downvotes);
+        console.log("upvotes",data.upvotes);
+        const p = new PeerNet(data.upvotes,data.__PEER_ID,updateFeed,setPeers);
         set__PEER_ID(p.id);
         setPeerNet(p);
-        p.connect();
-        setPeers(p.getPeers([]));
         setSavedPeers(data.savedPeers||[]);
-        setBlockedPeers(data.blockPeers||[])
+        setBlockedPeers(data.blockPeers||[]);
+        console.log("data",data.upvotes,upvotes);
+        setDataLoaded(true);
     },[])
+    useEffect(()=>{
+        if(dataloaded){
+        console.log("connected after data loaded")
+        PEERNET.connect();
+        setPeers(PEERNET.getPeers([]));
+        }
+    },[dataloaded])
+    useEffect(()=>{
+        try{
+        console.log(PEERNET);
+        PEERNET?.GET_FEED('popular');
+        }catch(e){
+            console.log(e);
+        }
+    },[upvotes,PEERNET])
     useEffect(()=>{
         setRawJson(JSON.stringify({upvotes,downvotes,savedPeers,connectedPeers,blockPeers,__PEER_ID}));
     },[upvotes,downvotes,savedPeers,connectedPeers,blockPeers,__PEER_ID])
