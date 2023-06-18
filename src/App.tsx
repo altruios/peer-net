@@ -38,13 +38,14 @@ function App() {
         console.log("connected after data loaded")
         PEERNET.connect();
         setPeers(PEERNET.getPeers([]));
-        }
+    }
     },[dataloaded])
     useEffect(()=>{
         try{
         console.log(PEERNET);
-        PEERNET?.GET_FEED('popular');
+        if(PEERNET?.linkFeed!==undefined) PEERNET?.linkFeed(upvotes);
         }catch(e){
+
             console.log(e);
         }
     },[upvotes,PEERNET])
