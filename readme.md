@@ -14,7 +14,7 @@ ephemeral, without comments, or users, just links)
 ### this is a work in progress
 
 status: basic demo, not out of the box.
-
+```
 todo:
 update peers section to following:
     -add visual status of connection
@@ -29,6 +29,6 @@ clean up peer fill algorithm:
 add tests
     -tests for correctness
     -tests for security from bad actors
-
+```
 
 
