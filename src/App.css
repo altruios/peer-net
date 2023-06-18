@@ -1,0 +1,125 @@
+#root {
+    display:flex;
+    padding: 2rem;
+    text-align: center;
+    height:100%;
+    width:100%;
+    margin: 0 auto;
+    font-size: 3rem;
+}
+.main{
+    height:100%;
+    width:100%;
+}
+.Link-Card{
+    border:solid rgb(118, 146, 124);
+    border-radius: 135px;
+    background-color: rgb(1, 15, 2);
+    border-width:10px;
+    display:flex;
+    flex-flow: row nowrap;
+    width:auto;
+    min-height:10%;
+    justify-content: center;
+    align-items: center;
+    margin:1.5rem;
+}
+.upvoteBtn{
+    background-color: green;
+    border-radius: 5rem;
+    border-color:grey;
+
+    border-radius: 5rem;
+    border-style: inset;
+    border-width: 1rem;
+}
+.downvoteBtn{
+    background-color: red;
+    border-radius: 5rem;
+    border-style: inset;
+    border-width: 1rem;
+    border-color:grey;
+}
+.main-container{
+    border:solid rgb(84, 230, 27);
+    display:flex;
+    justify-content: center;;
+    flex-flow:row nowrap;
+    width:100%;
+}
+.LinkCards{
+    display:flex;
+    flex-flow:column nowrap;
+    min-width: 30%;
+    overflow-y: scroll;
+    width:100%;
+    
+}
+.card-img{
+    max-width: 80%;
+    border:inset;
+    border-radius: 315px;
+}
+.upvotes{
+    display: flex;
+    border: solid rgb(12, 105, 74);
+}
+.downvotes{
+    display:flex;
+    justify-items:middle;
+    grid-area: downvotes;
+}
+.feed{
+    border:solid purple;
+    grid-area: feed;
+}
+.up{
+    background-color: rgb(115, 155, 115);
+}
+.down{
+    background-color: rgb(141, 116, 121);
+}
+.Link-Card-Content{
+    display:flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    flex-basis:1;
+    flex-grow:1;
+    border:solid rgb(25, 134, 10);
+}
+
+.PeerCards{
+    border:solid green;
+    border-width: 10px;;
+}
+.Peer-Card{
+    border:solid red;
+    width:fit-content;
+    border-radius:3rem;
+}
+.Peer-Card:hover{
+    background-color:rgba(0, 0, 255, 0.295);
+}
+.selected{
+    background-color: rgba(25, 112, 25, 0.562);
+}
+.Keep-Btn{
+
+    background-color: green;
+    border-radius: 5rem;
+    border-color:grey;
+
+    border-radius: 5rem;
+    border-style: inset;
+    border-width: 1rem;
+}
+.Remove-Btn{
+
+    background-color: red;
+    border-radius: 5rem;
+    border-color:grey;
+
+    border-radius: 5rem;
+    border-style: inset;
+    border-width: 1rem;
+}
