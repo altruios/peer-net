@@ -1,5 +1,8 @@
-import { MouseEvent, useEffect, useRef } from "react";
+import { MouseEvent, useState,useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
 import styled from 'styled-components'
+import { addPost } from "../slices/postSlice";
+import PEERNET from "../PEERNET";
 const Container = styled.dialog`
   width: 40%;
   border-radius: 8px;
@@ -81,4 +84,65 @@ const DialogModal = ({
   );
 };
 
-export default DialogModal;
+const PeerPostLink = (props:any)=>{
+    const [isOpened,setIsOpened] = props.openState;
+    const dispatch = useDispatch();
+    const [newTitle,setNewTitle]=useState('');
+    const [newLink,setNewLink]=useState('');
+    const [newImage,setNewImage]=useState('');
+    const [newText,setNewText]=useState('');
+    const clear_post = ()=>{
+
+        setNewImage('');
+        setNewLink('');
+        setNewText('');
+        setNewTitle('');
+    }
+    const onProceed = () => {
+        console.log("Proceed clicked");
+        console.log(newText,newTitle,newImage,newLink);
+        const post = {
+            title:newTitle,
+            link:newLink,
+            image:newImage,
+            text:newText
+        }
+        dispatch(addPost({post,source:PEERNET.id}))
+        PEERNET.notify(post);
+
+        clear_post();
+        PEERNET.notify(post);
+      };
+    const onClose=()=>{
+        setIsOpened(false);
+        clear_post();
+    }
+    return(
+    <DialogModal 
+        title="Add link"
+        isOpened={isOpened}
+        onProceed={onProceed}
+        onClose={onClose}>
+            <div className="newForm">
+
+            <div className="inputDiv">
+            <label> title</label>
+            <input className='newTitle' value={newTitle} onChange={(e)=>setNewTitle(e.target.value)}></input>
+            </div> 
+            <div className="inputDiv">
+            <label> link</label>
+            <input className="newLink" value={newLink} onChange={(e)=>setNewLink(e.target.value)}></input>
+            </div> 
+            <div className="inputDiv">
+            <label> image-URL</label>
+            <input className="newImage" value={newImage} onChange={(e)=>setNewImage(e.target.value)}></input>
+            </div> 
+            <div className="inputDiv">
+            <label> text</label>
+            <textarea className="newText" value={newText} onChange={(e)=>setNewText(e.target.value)}></textarea>
+            </div> 
+
+            </div>
+        </DialogModal>
+)}
+export default PeerPostLink;

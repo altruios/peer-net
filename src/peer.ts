@@ -1,6 +1,9 @@
 import {Peer} from 'peerjs';
+import { useSelector } from 'react-redux';
 import Get_Shuffled from './utils/shuffle';
-
+import {updateFeed} from './slices/postSlice';
+import {updateConnOfPeer,selectPeerByID, updateStateOfPeer, addPeer,addNewPeers } from './slices/peerSlice';
+import store from './store';
 function CreatePeer(id:string, callback:any){
     let peer = new Peer(id);
     peer.on("open",callback)
@@ -9,64 +12,39 @@ function CreatePeer(id:string, callback:any){
 class PeerNet{
     peer:any;
     id:string;
-    feed:any[];
-    table:any[];
-    setFeed:any;
-    setPeers:any;
-    constructor(feed:any[],saved_id:string, setFeed:any,setPeers:any){
+    dispatch:any=store.dispatch;
+    constructor(saved_id:string){
         this.id = import.meta.env.VITE_PEERID||saved_id||`peer-${crypto.randomUUID()}`;
         console.log(this.id,"is id")
-        this.table = [];
-        this.feed=feed;
-        console.log(this.feed);
         this.peer=null;
-        this.setFeed=setFeed;
-        this.setPeers=setPeers;
     }
-    linkFeed(feed:any[]){
-        this.feed=feed;
-    }
-    filterFeed(feed:any[]){
-        const raw = localStorage.getItem("peer-net/data")||'';
-        const parsed = JSON.parse(raw)
-        const filterlist = [...parsed.upvotes,...parsed.downvotes];
+
+    filterSeenFeed(feed:any[]){
+        const filterlist = store.getState().posts.filter(x=>x.vote!=0);
         return feed.filter((x:any)=>!filterlist.some((y:any)=>y.link===x.link));
     }
     updateFeed(feed:any[],source:string){
         console.log("feed data from",source);
-        const new_feed = this.filterFeed(feed);
-        this.setFeed((prev:any)=> {
-            const next:any[]= Array.from(new Set([...prev,...new_feed]))
-            this.feed=next;
-            return next;
-        })
-        console.log(this.feed);
+        const new_feed = this.filterSeenFeed(feed);
+        this.dispatch(updateFeed({feed:new_feed}));
     }
     updatePeers(peers:any[],source:string){
         console.log("peers data from ",source,peers);
-        const newPeers=peers.map(x=>(
-            {peer:x?.peer,
-            connected:true
+        const newPeers=peers.map(x=>{
+            return{
+                peer:x?.peer,
+                connected:true,
+                conn:x,
+                score:x?.score
+            }
+        });
+        peers.forEach((peer:any)=>{
+            console.log("updating peers, ,",peer)
         })
-        )
-        this.setPeers((prev:any)=>{
-            const next = newPeers.filter(x=>prev.peer!=x.peer);
-            console.log("next is",next,newPeers);
-            this.table=next;
-            return next;
-        })
-    }
-    connectNewPeer(p:any){
-        console.log("new peer heard",p);
-        const peer = {peer:p,connected:true}
-        this.setPeers((prev:any)=>{
-            const next= Array.from(new Set([...prev,peer])).filter(x=>x.peer!==this.id&&x.peer);
-            this.table=next;
-            return next;
-        })
+        this.dispatch(addNewPeers({peers:newPeers}))
     }
     init(init_host:string){
-        if(init_host!=this.id)this.table.push({peer:init_host,connected:true});
+        if(init_host!=this.id)this.dispatch(addPeer({peer:init_host,connected:false, conn:null,score:0}));
     }
     connect_to_peer(id:string){
         const conn = this.peer.connect(id);
@@ -93,36 +71,31 @@ class PeerNet{
         });
     }
     updateConnStatus(conn:any,state:boolean){
-        this.setPeers((prev:any)=>{
-            const found = prev.find((x:any)=>x.peer==conn.peer);
-            if(found){
-                const replacement:any = {peer:found.peer,state};
-                const next = prev.map((x:any,i:number,arr:any[])=>arr[i].peer==replacement.peer?replacement:x)
-                return next;
-            }
-            return prev;
-        })
+        const peer = useSelector(selectPeerByID(conn.peer));
+        this.dispatch(updateConnOfPeer({peer:peer.peer,conn}));
+        this.dispatch(updateStateOfPeer({peer:peer.peer,state}));
     }
     ConReceives(conn:any,id:string){
-
             conn.on('data',async(data:any)=>{
+                this.dispatch(updateConnOfPeer({peer:conn.peer,conn}))
                 if(data.key=="peers"){
                     console.log("peers data from",id);
                     this.updatePeers(data.peers,id)
-                    console.log("count of peers",this.table.length)
                 }
                 if(data.key=="feed"){
                     console.log("feed data from",id);
-                    const new_feed = this.filterFeed(data.feed);
+                    const new_feed = this.filterSeenFeed(data.feed);
                     this.updateFeed(new_feed,id);
                 }
                 if(data.key=="get_feed"){
-                console.log("get feed called")
-                conn.send({key:"feed",feed:this.feed});
+                    const feed = store.getState().posts.filter(x=>x.vote>0);
+                   conn.send({key:"feed",feed});
                 }
                 if(data.key=="get_peers"){
-                const peers = Get_Shuffled(this.table,100);
-                conn.send({key:"peers",peers});
+
+                    const active = store.getState().peers.filter(x=>x.state)
+                    const peers = Get_Shuffled(active,100);
+                    conn.send({key:"peers",peers});
                 }
                 if(data.key=="notify"){
                     console.log("notification heard")
@@ -152,58 +125,49 @@ class PeerNet{
         conn.send({key:"get_peers"});
 
     }
-    get_feed(){
-        console.log(this.peer); 
-        const feed:any[]=[];
-        console.log(this.table,"?is table");
-        for(const peer in this.table){
-            const conn = this.peer.connect(peer.peer);
-            conn.send({key:"get_feed"});
-            conn.on("data",(data:any)=>{
-
-                console.log("abced")
-                console.log("conn",data);
-            })
+    get_feeds(peers:any[]){
+        for(const p of peers){
+            console.log("is p!@#!@#!@#!@#",p);
+            this.get_feed(p.conn);
         }
-
+    }
+    get_feed(conn:any){
+        console.log(this.peer); 
+        conn.send({key:"get_feed"});
     }
     connect(){
         console.log("start");
-        if(this.table.length==0)this.init((import.meta.env.VITE_PEER0||""));
-        console.log("peers:",this.table.length);
+        const peers = store.getState().peers.filter(x=>x.state)
+        if(peers.length==0) this.init((import.meta.env.VITE_PEER0||""));
         let peer:any = CreatePeer(this.id,()=>{
             this.peer=peer;
             try{
-                for(const t of this.table){
+                if(peers.length==0) throw "skipping peer connect as no peers are present"
+                for(const t of peers){
                     console.log("connecting")
                     this.connect_to_peer(t.peer);
                 }   
             }catch(e){
                 console.log(e);
-                console.log("con heard in boot node")
+                console.log("boot node mode detected")
             }
                 peer.on('connection',(conn:any)=>{
+                    this.updateConnStatus(conn,true)
                     console.log("connection heard");
+
                     this.ConReceives(conn,conn.peer);
                     if(conn.peer.startsWith('peer-')) this.updatePeers([conn],conn.peer);
-                    console.log("this table",this.table);
                 })
         
             })
         
         
     } 
-    getPeers(saved_table:string[]){
-        return saved_table.length>0?saved_table:this.table;
-    }
-    clearPeers(setPeers:any){
-        this.table=[];
-        setPeers([]);
-    }
     notify(post:any){
+        const active = store.getState().peers.filter(x=>x.state)
         console.log("notification sending")
 
-        for(const t of this.table){
+        for(const t of active){
             const conn = this.peer.connect(t.peer);
                 conn.on("connection",(conn:any)=>{
                     conn.send({key:"notify",post,source:this.id})
