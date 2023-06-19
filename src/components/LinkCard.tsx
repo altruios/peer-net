@@ -1,14 +1,18 @@
+import { useDispatch } from "react-redux";
 import { useState } from "react";
+import { updatePostVote } from "../slices/postSlice";
 function LinkCard(props:any) {
 const p = props.props;
 const data = p.link;
 const [isOpen,setIsOpen]= useState(false);
+const dispatch = useDispatch();
 return (<div className='Link-Card'
 > 
             <button 
             className="upvoteBtn"
             onClick={() =>{
-                p.handle_vote(1,data);
+                console.log(data,"is changing");
+                dispatch(updatePostVote({link:data.link,vote:1}))
             }}>
                 ↑
             </button>
@@ -36,8 +40,9 @@ return (<div className='Link-Card'
 
             <button 
             className="downvoteBtn"
-            onClick={() =>{                  
-                  p?.handle_vote(-1,data);
+            onClick={() =>{
+                dispatch(updatePostVote({link:data.link,vote:1}))
+                    
             }}>
                 ↓
             </button>

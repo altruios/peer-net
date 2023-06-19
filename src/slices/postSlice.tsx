@@ -26,10 +26,13 @@ export const postSlice = createSlice({
             const next:any[]= Array.from(new Set([...state,...feed]))
             return next;
 
-        }
+        },
+        hydrateVotedContent:(state,action)=>{
+            return action.payload
+        },
     },
 });
-export const { addPost, removePost,updatePostVote,updateFeed } = postSlice.actions;
+export const { addPost, removePost,updatePostVote,updateFeed,hydrateVotedContent } = postSlice.actions;
 export const selectPosts = (state: any) => {
     return state.posts;
 }
@@ -40,6 +43,6 @@ export const selectFilteredPosts = (state: any) => {
     return state.posts.filter((x:any)=>x.vote<0);
 }
 export const selectToVotePosts = (state: any) => {
-    return state.posts.filter((x:any)=>x.vote!=0);
+    return state.posts.filter((x:any)=>x.vote==0);
 }
 export default postSlice.reducer;

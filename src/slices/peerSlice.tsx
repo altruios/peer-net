@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 export const peerSlice = createSlice({
     name: "peers",
     initialState: [
-        { peer: "", state: false, conn: null , score:0}
+        { peer: import.meta.env.VITE_PEER0, state: false , score:1}
     ],
     reducers: {
         addPeer: (state, action) => {
@@ -35,18 +35,12 @@ export const peerSlice = createSlice({
             }
             return state;
         },
-        updateConnOfPeer: (state, action) => {
-            console.log("update updateConnOfPeer");
-            console.log("action is:", action);
-            const found = state.find(x => x.peer == action.payload.peer);
-            if (found) {
-                found.conn = action.payload.conn;
-            }
-            return state;
-        }
+        hydratePeers:(state,action)=>{
+            return action.payload;
+        },
     },
 });
-export const { addPeer, removePeer,updateStateOfPeer,updateConnOfPeer,updateScoreOfPeer,addNewPeers} = peerSlice.actions;
+export const { addPeer, removePeer,updateStateOfPeer,updateScoreOfPeer,addNewPeers,hydratePeers} = peerSlice.actions;
 export const selectPeers = (state: any) => {
     return state.peers;
 }

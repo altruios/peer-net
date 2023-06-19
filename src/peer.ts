@@ -1,8 +1,9 @@
+import { useRef } from 'react';
 import {Peer} from 'peerjs';
 import { useSelector } from 'react-redux';
 import Get_Shuffled from './utils/shuffle';
 import {updateFeed} from './slices/postSlice';
-import {updateConnOfPeer,selectPeerByID, updateStateOfPeer, addPeer,addNewPeers } from './slices/peerSlice';
+import {selectPeerByID, updateStateOfPeer, addPeer,addNewPeers } from './slices/peerSlice';
 import store from './store';
 function CreatePeer(id:string, callback:any){
     let peer = new Peer(id);
@@ -13,10 +14,14 @@ class PeerNet{
     peer:any;
     id:string;
     dispatch:any=store.dispatch;
+    pool:any;
     constructor(saved_id:string){
         this.id = import.meta.env.VITE_PEERID||saved_id||`peer-${crypto.randomUUID()}`;
         console.log(this.id,"is id")
         this.peer=null;
+    }
+    setPool(ref:any){
+        this.pool=ref;
     }
 
     filterSeenFeed(feed:any[]){
@@ -34,7 +39,6 @@ class PeerNet{
             return{
                 peer:x?.peer,
                 connected:true,
-                conn:x,
                 score:x?.score
             }
         });
@@ -42,16 +46,23 @@ class PeerNet{
             console.log("updating peers, ,",peer)
         })
         this.dispatch(addNewPeers({peers:newPeers}))
+        const uniques = this.pool.current.filter((x:any)=>!peers.some(conn=>conn.peer=x.peer));
+        for(const u of uniques){
+            this.pool.current.push(u);
+        }
     }
     init(init_host:string){
-        if(init_host!=this.id)this.dispatch(addPeer({peer:init_host,connected:false, conn:null,score:0}));
+
+        if(init_host!=this.id)this.dispatch(addPeer({peer:init_host,connected:false,score:0}));
     }
     connect_to_peer(id:string){
+
+        console.log("this is:",id,"is id of connection")
         const conn = this.peer.connect(id);
-        console.log(id,"is id of connection")
         conn.on("open",()=>{
             console.log("connected to peer");
             this.updatePeers([conn],id);
+            this.updateConnStatus(conn,true);
             this.ConSends(conn);
             this.ConReceives(conn,id);
         })
@@ -71,13 +82,16 @@ class PeerNet{
         });
     }
     updateConnStatus(conn:any,state:boolean){
-        const peer = useSelector(selectPeerByID(conn.peer));
-        this.dispatch(updateConnOfPeer({peer:peer.peer,conn}));
-        this.dispatch(updateStateOfPeer({peer:peer.peer,state}));
+        console.log("conn",conn,"status",state);
+        this.dispatch(updateStateOfPeer({peer:conn.peer,state}));
+        console.log(this.pool.current);
+        const found = this.pool.current.find((x:any)=>x.peer==conn.peer);
+        if(!found) this.pool.current.push(conn);
+        
+        console.log(this.pool);
     }
     ConReceives(conn:any,id:string){
             conn.on('data',async(data:any)=>{
-                this.dispatch(updateConnOfPeer({peer:conn.peer,conn}))
                 if(data.key=="peers"){
                     console.log("peers data from",id);
                     this.updatePeers(data.peers,id)
@@ -125,23 +139,23 @@ class PeerNet{
         conn.send({key:"get_peers"});
 
     }
-    get_feeds(peers:any[]){
-        for(const p of peers){
-            console.log("is p!@#!@#!@#!@#",p);
-            this.get_feed(p.conn);
+    get_feeds(conns:any[]){
+        for(const c of conns){
+            console.log("is p!@#!@#!@#!@#",c);
+            this.get_feed(c);
         }
     }
     get_feed(conn:any){
-        console.log(this.peer); 
+        console.log(this.peer,conn); 
         conn.send({key:"get_feed"});
     }
-    connect(){
+    connect(peers:any[]){
         console.log("start");
-        const peers = store.getState().peers.filter(x=>x.state)
         if(peers.length==0) this.init((import.meta.env.VITE_PEER0||""));
         let peer:any = CreatePeer(this.id,()=>{
             this.peer=peer;
             try{
+                if(peers[0].peer==this.id) throw "Skipping peer connect as this is a boot node"
                 if(peers.length==0) throw "skipping peer connect as no peers are present"
                 for(const t of peers){
                     console.log("connecting")
@@ -151,15 +165,15 @@ class PeerNet{
                 console.log(e);
                 console.log("boot node mode detected")
             }
-                peer.on('connection',(conn:any)=>{
-                    this.updateConnStatus(conn,true)
-                    console.log("connection heard");
+            peer.on('connection',(conn:any)=>{
+                this.updateConnStatus(conn,true)
+                console.log("connection heard");
 
-                    this.ConReceives(conn,conn.peer);
-                    if(conn.peer.startsWith('peer-')) this.updatePeers([conn],conn.peer);
-                })
-        
+                this.ConReceives(conn,conn.peer);
+                if(conn.peer.startsWith('peer-')) this.updatePeers([conn],conn.peer);
             })
+    
+        })
         
         
     } 
