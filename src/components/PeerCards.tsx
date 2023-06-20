@@ -1,15 +1,14 @@
 import PeerCard from "./PeerCard";
 function PeerCards(props:any) {
     const p = props.props;
-    const feed = p?.feed;
-
+    const peers = p?.peers;
 return (<div className="PeerCards"> 
-        <h2>{p.name}</h2>
-        {feed?.map(
-            (link:any,i:number)=>
-                <PeerCard 
-                    key={`${link.link}}${i}`} 
-                    props={{link:link.link,type:link.up+link.down}}/>)} 
+        <h2>Peer Connector</h2>
+        {peers?.map(
+            (peer:any,i:number)=>
+                <PeerCard
+                    key={`${peer?.id}}${i}`} 
+                    peer={peer}/>)} 
         </div>
 )
         

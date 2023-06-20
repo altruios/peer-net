@@ -9,9 +9,9 @@ import {
     hydratePeers
 } from './slices/peerSlice';
 import LinkCards from './components/LinkCards';
-import PeerConnector from './components/PeerConnector';
+import PeerCards from './components/PeerCards';
 import PeerPostLink from './components/PeerPostLink';
-import PEERNET from './PEERNET';
+import PEER_NET from './PEER_NET';
 import { removePost, 
     removeDuplicatePosts,
     selectSavedPosts, 
@@ -21,22 +21,22 @@ import { removePost,
 
 
 function App() {
-    const [show_downvotes,setShowDownvotes]=useState<boolean>(false);
+    const [showDownVotes,setShowDownVotes]=useState<boolean>(false);
     const [hovered_link,setHoveredLink] = useState('');
     const [isOpened, setIsOpened] = useState(false);
     const [isLoaded,setIsLoaded]=useState(false);
     const [isConnected,setIsConnected]=useState(false);
     const connections = useRef([]);
     const getFeed=(peers:any[])=>{
-        console.log("this triggers",connections.current,PEERNET.pool.current,peers);
+        console.log("this triggers",connections.current,PEER_NET.pool.current,peers);
         connections.current.length>0?
-        PEERNET.get_feeds(peers)
+        PEER_NET.get_feeds(peers)
         :
-        PEERNET.connect(peers);
+        PEER_NET.connect(peers);
     }
 
-    const upvotes = useSelector(selectSavedPosts);
-    const downvotes = useSelector(selectFilteredPosts);
+    const upVotes = useSelector(selectSavedPosts);
+    const downVotes = useSelector(selectFilteredPosts);
     const feed = useSelector(selectToVotePosts);
     const peers = useSelector(selectPeers);
     const onlinePeers = useSelector(selectActivePeers)
@@ -49,8 +49,8 @@ function App() {
         const rawJson = localStorage.getItem('peer-net/data')||'{}'
         const data = JSON.parse(rawJson);
         dispatch(hydratePeers(data.peers?.filter((x:any)=>x.score>0)));
-        const uv=(data?.upvotes)?data.upvotes:[];
-        const dv=(data?.downvotes)?data.downvotes:[];
+        const uv=(data?.upVotes)?data.upVotes:[];
+        const dv=(data?.downVotes)?data.downVotes:[];
         dispatch(hydrateVotedContent([...uv,...dv]))
     }   
     useEffect(cleanData, []);
@@ -70,32 +70,28 @@ function App() {
     
     useEffect(()=>{
         console.log(peers.length,"must be >0")
-        console.log("isloaded",isLoaded)
-        PEERNET.setPool(connections);
-        isLoaded?PEERNET.connect(peers):null;
+        console.log("isLoaded",isLoaded)
+        PEER_NET.setPool(connections);
+        isLoaded?PEER_NET.connect(peers):null;
     }, [isLoaded]);
     
 
     useEffect(()=>{
         console.log(onlinePeers.length,"must be >0")
-        console.log("is connnected",isConnected);
+        console.log("is connected",isConnected);
         if(isConnected){
             console.log("connections current",connections.current)
-            PEERNET.get_feeds(connections.current)
+            PEER_NET.get_feeds(connections.current)
         };
     }, [isConnected]);
 
-
+    
 
     useEffect(()=>{
         console.log("storing data in:");
-        localStorage.setItem('peer-net/data',JSON.stringify({upvotes,downvotes,peers}));
-    },[upvotes,downvotes,peers])
+        localStorage.setItem('peer-net/data',JSON.stringify({upVotes,downVotes,peers}));
+    },[upVotes,downVotes,peers])
 
-    const handlePeerChange = (peer:any,flag:boolean)=>{
-        updateScoreOfPeer({peer,score:flag?1:0});
-        
-    }
 
     const handleHover = (link:string)=>{
         setHoveredLink(link);
@@ -104,23 +100,23 @@ function App() {
         <div className="main">
  
             <h1>peer net</h1>
-            <h3>{PEERNET?.id}</h3>
-
+            <h3>{PEER_NET?.id}</h3>
+        <div>{connections.current.map((x:any)=>x.peer)}</div>
             <div>
             <button onClick={() => setIsOpened(true)}>new post</button>
 
                 <PeerPostLink openState={[isOpened,setIsOpened]}/>
-                show downvoted items:
-                <input type="checkbox" checked={show_downvotes} onChange={(e)=>setShowDownvotes(e.target.checked)}></input>
+                show down voted items:
+                <input type="checkbox" checked={showDownVotes} onChange={(e)=>setShowDownVotes(e.target.checked)}></input>
                 <button className='btn' onClick={()=>{getFeed(connections.current)}}>get feed</button>
             </div>
             <div className='main-container'>
             <LinkCards 
-                className="upvotes"
+                className="upVotes"
 
                 props={{
-                    feed:upvotes?.map((x:any)=>({link:x,type:"up"})),
-                    name:"upvotes",
+                    feed:upVotes?.map((x:any)=>({link:x,type:"up"})),
+                    name:"upVotes",
                     handleHover:setHoveredLink,
                     hovered_link
                 }}
@@ -138,19 +134,19 @@ function App() {
                     }
                 } 
             />
-            {show_downvotes?
+            {showDownVotes?
             <LinkCards 
-            className="Downvotes"
+            className="downVotes"
             props={{
-                feed:downvotes?.map((x:any)=>({link:x,type:"down"})),
-                name:"downvotes",
+                feed:downVotes?.map((x:any)=>({link:x,type:"down"})),
+                name:"downVotes",
                 handleHover,
                 hovered_link
             }}
             />
             :null}
             </div>
-        <PeerConnector props={{peers,handleChange:handlePeerChange}}/>
+        <PeerCards props={{peers}}/>
         </div>
     )
 }

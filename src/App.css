@@ -60,14 +60,13 @@
     border:inset;
     border-radius: 315px;
 }
-.upvotes{
+.upVotes{
     display: flex;
     border: solid rgb(12, 105, 74);
 }
-.downvotes{
+.downVotes{
     display:flex;
     justify-items:middle;
-    grid-area: downvotes;
 }
 .feed{
     border:solid purple;

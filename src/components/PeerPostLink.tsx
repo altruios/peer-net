@@ -2,7 +2,7 @@ import { MouseEvent, useState,useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import styled from 'styled-components'
 import { addPost } from "../slices/postSlice";
-import PEERNET from "../PEERNET";
+import PEERNET from "../PEER_NET";
 const Container = styled.dialog`
   width: 40%;
   border-radius: 8px;
