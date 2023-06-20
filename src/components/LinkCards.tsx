@@ -2,7 +2,6 @@ import LinkCard from "./LinkCard";
 function LinkCards(props:any) {
     const p = props.props;
     const feed = p?.feed;
-    console.log("feed,",feed);
 return (<div className="LinkCards"> 
         <h2>{p.name}</h2>
         {feed?.map(

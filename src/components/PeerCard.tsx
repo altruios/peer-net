@@ -3,7 +3,6 @@ import { updateScoreOfPeer } from "../slices/peerSlice";
 
 function PeerCard(props:any) {
     const peer = props.peer;
-    console.log("peer",peer);
     const dispatch = useDispatch();
 
     return (<div className={`Peer-Card ${peer?.state}`}> 

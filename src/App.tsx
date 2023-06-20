@@ -28,7 +28,7 @@ function App() {
     const [isConnected,setIsConnected]=useState(false);
     const connections = useRef([]);
     const getFeed=(peers:any[])=>{
-        console.log("this triggers",connections.current,PEER_NET.pool.current,peers);
+      //  console.log("this triggers",connections.current,PEER_NET.pool.current,peers);
         connections.current.length>0?
         PEER_NET.get_feeds(peers)
         :
@@ -42,7 +42,7 @@ function App() {
     const onlinePeers = useSelector(selectActivePeers)
     const dispatch = useDispatch();
     const cleanData = ()=>{
-        console.log("data",peers)
+    //    console.log("data",peers)
         dispatch(removePeer({peer:""}))
         dispatch(removePost({link:""}))
         dispatch(removeDuplicatePosts({}))
@@ -57,28 +57,28 @@ function App() {
     
     useEffect(()=>{
         const tv = peers.length>0&&(peers[0].peer!=="")&&!isLoaded;
-        console.log("tv",tv);
+    //    console.log("tv",tv);
         tv?setIsLoaded(true):null;
     }, [isLoaded]);
     
     useEffect(()=>{
-        console.log("online",onlinePeers)
+     //   console.log("online",onlinePeers)
         const tv=onlinePeers.length>0&&isLoaded&&!isConnected;
-        console.log(tv,"is res");
+    //    console.log(tv,"is res");
         tv?setIsConnected(true):null;
     }, [isConnected,isLoaded]);
     
     useEffect(()=>{
-        console.log(peers.length,"must be >0")
-        console.log("isLoaded",isLoaded)
+   //     console.log(peers.length,"must be >0")
+    //    console.log("isLoaded",isLoaded)
         PEER_NET.setPool(connections);
         isLoaded?PEER_NET.connect(peers):null;
     }, [isLoaded]);
     
 
     useEffect(()=>{
-        console.log(onlinePeers.length,"must be >0")
-        console.log("is connected",isConnected);
+   //     console.log(onlinePeers.length,"must be >0")
+   //     console.log("is connected",isConnected);
         if(isConnected){
             console.log("connections current",connections.current)
             PEER_NET.get_feeds(connections.current)
@@ -88,7 +88,7 @@ function App() {
     
 
     useEffect(()=>{
-        console.log("storing data in:");
+   //     console.log("storing data in:");
         localStorage.setItem('peer-net/data',JSON.stringify({upVotes,downVotes,peers}));
     },[upVotes,downVotes,peers])
 
@@ -101,7 +101,7 @@ function App() {
  
             <h1>peer net</h1>
             <h3>{PEER_NET?.id}</h3>
-        <div>{connections.current.map((x:any)=>x.peer)}</div>
+        <div>{connections.current.map((x:any)=><div>{x.peer}</div>)}</div>
             <div>
             <button onClick={() => setIsOpened(true)}>new post</button>
 

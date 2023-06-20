@@ -15,7 +15,7 @@ export const peerSlice = createSlice({
             const peers = action.payload.peers;
             const uniques = peers.filter((x:any)=>!state.some(conn=>conn.peer==x.peer));
             const notSelf = uniques.filter((x:any)=>x.peer!=action.payload.id);
-            console.log("adding new peers",notSelf);
+           console.log("adding new peers",notSelf);
             return [...state,...notSelf];
         },
         removePeer: (state, action) => {

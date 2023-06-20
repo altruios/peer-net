@@ -6,7 +6,7 @@ export const postSlice = createSlice({
     ],
     reducers: {
         addPost: (state, action) => {
-            console.log(action.payload,"post added")
+         //   console.log(action.payload,"post added")
             const found = state.find(x=>x.link==action.payload.link);
             if(found) return state;
             state=[...state,action.payload.post];
@@ -14,7 +14,7 @@ export const postSlice = createSlice({
             return state;
         },
         removeDuplicatePosts(state,action){
-            console.log("removing duplicate posts")
+        //    console.log("removing duplicate posts")
             return state.reduce((acc:any[],item:any)=>{
                 if(!acc.find((x:any)=>x.link==item.link&&x.source==item.source)){
                     acc.push(item);
@@ -33,7 +33,7 @@ export const postSlice = createSlice({
             return state;
         },
         updateFeed:(state, action)=>{
-            console.log("update feed");
+    //        console.log("update feed");
             const feed = action.payload.feed;
             const unique = feed.filter((x:any)=>!state.some(y=>y.link==x.link&&y.source==x.source))
             const next:any[]=[...state,...unique]
