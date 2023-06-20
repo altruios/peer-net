@@ -1,6 +1,7 @@
 import { useDispatch } from "react-redux";
 import { useState } from "react";
 import { updatePostVote } from "../slices/postSlice";
+import PEERNET from "../PEERNET";
 function LinkCard(props:any) {
 const p = props.props;
 const data = p.link;
@@ -12,7 +13,7 @@ return (<div className='Link-Card'
             className="upvoteBtn"
             onClick={() =>{
                 console.log(data,"is changing");
-                dispatch(updatePostVote({link:data.link,vote:1}))
+                dispatch(updatePostVote({link:data.link,vote:data?.vote!==1?1:0}))
             }}>
                 ↑
             </button>
@@ -22,8 +23,17 @@ return (<div className='Link-Card'
                 onClick={()=>setIsOpen(!isOpen)}
                 >
                 <div className="card-body">
+                <button 
+            className="upvoteBtn"
+            onClick={() =>{
+                console.log(data,"is changing");
+                PEERNET.notify(data,PEERNET.id);
+            }}>
+                notify
+            </button>
                     <h5 className="card-title">{data?.title||data.link}</h5>
                     <p className="card-text">{data.text||data?.link}</p>
+                    <p className="card-source">{data.source}</p>
                 </div>
                 {isOpen?
                     data?.image?
@@ -34,6 +44,7 @@ return (<div className='Link-Card'
                         <a href={data?.link}>{data?.link}</a>
                     :<></>
                     }
+                
                     </div>
 
 
@@ -41,7 +52,7 @@ return (<div className='Link-Card'
             <button 
             className="downvoteBtn"
             onClick={() =>{
-                dispatch(updatePostVote({link:data.link,vote:1}))
+                dispatch(updatePostVote({link:data.link,vote:data?.vote!==-1?-1:0}))
                     
             }}>
                 ↓

@@ -12,10 +12,8 @@ export const peerSlice = createSlice({
         addNewPeers:(state, action)=>{
             const peers = action.payload.peers;
             const uniques = peers.filter((x:any)=>!state.some(conn=>conn.peer=x.peer));
-            for(const u of uniques){
-                state.push(u)
-            }
-            return state;
+            console.log("adding new peers",peers,uniques);
+            return [...state,...uniques];
         },
         removePeer: (state, action) => {
             console.log("peer heard",action.payload);
@@ -36,7 +34,11 @@ export const peerSlice = createSlice({
             return state;
         },
         hydratePeers:(state,action)=>{
-            return action.payload;
+            const peers = action.payload;
+            const selfID = import.meta.env.VITE_PEERID; 
+            const uniques = peers?.filter((x:any)=>!state.some(conn=>conn.peer==x.peer&&selfID!==conn.peer));
+
+            return uniques
         },
     },
 });

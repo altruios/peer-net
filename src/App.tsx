@@ -12,7 +12,12 @@ import LinkCards from './components/LinkCards';
 import PeerConnector from './components/PeerConnector';
 import PeerPostLink from './components/PeerPostLink';
 import PEERNET from './PEERNET';
-import { removePost, selectSavedPosts, selectToVotePosts, updatePostVote,hydrateVotedContent } from './slices/postSlice';
+import { removePost, 
+    removeDuplicatePosts,
+    selectSavedPosts, 
+    selectToVotePosts, 
+    hydrateVotedContent, 
+    selectFilteredPosts} from './slices/postSlice';
 
 
 function App() {
@@ -23,12 +28,15 @@ function App() {
     const [isConnected,setIsConnected]=useState(false);
     const connections = useRef([]);
     const getFeed=(peers:any[])=>{
-        console.log("this triggers",connections.current,PEERNET.pool.current);
+        console.log("this triggers",connections.current,PEERNET.pool.current,peers);
+        connections.current.length>0?
         PEERNET.get_feeds(peers)
+        :
+        PEERNET.connect(peers);
     }
 
     const upvotes = useSelector(selectSavedPosts);
-    const downvotes = useSelector(selectSavedPosts);
+    const downvotes = useSelector(selectFilteredPosts);
     const feed = useSelector(selectToVotePosts);
     const peers = useSelector(selectPeers);
     const onlinePeers = useSelector(selectActivePeers)
@@ -37,10 +45,13 @@ function App() {
         console.log("data",peers)
         dispatch(removePeer({peer:""}))
         dispatch(removePost({link:""}))
+        dispatch(removeDuplicatePosts({}))
         const rawJson = localStorage.getItem('peer-net/data')||'{}'
         const data = JSON.parse(rawJson);
-        dispatch(hydratePeers(data.peers))
-        dispatch(hydrateVotedContent([...data.upvotes,...data.downvotes]))
+        dispatch(hydratePeers(data.peers?.filter((x:any)=>x.score>0)));
+        const uv=(data?.upvotes)?data.upvotes:[];
+        const dv=(data?.downvotes)?data.downvotes:[];
+        dispatch(hydrateVotedContent([...uv,...dv]))
     }   
     useEffect(cleanData, []);
     
@@ -85,11 +96,7 @@ function App() {
         updateScoreOfPeer({peer,score:flag?1:0});
         
     }
-    const handle_vote_change = (vote:number,link_obj:any)=>{
-        const dispatch = useDispatch()
-        const link:string = link_obj.link;
-        dispatch(updatePostVote({link,vote}))
-    }
+
     const handleHover = (link:string)=>{
         setHoveredLink(link);
     }

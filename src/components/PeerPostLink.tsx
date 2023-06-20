@@ -105,14 +105,13 @@ const PeerPostLink = (props:any)=>{
             title:newTitle,
             link:newLink,
             image:newImage,
-            text:newText
+            text:newText,
+            vote:1,
         }
         dispatch(addPost({post,source:PEERNET.id}))
-        PEERNET.notify(post);
-
-        clear_post();
-        PEERNET.notify(post);
-      };
+        PEERNET.notify(post,PEERNET.id);
+        onClose();
+    };
     const onClose=()=>{
         setIsOpened(false);
         clear_post();

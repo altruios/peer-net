@@ -2,13 +2,25 @@ import { createSlice } from '@reduxjs/toolkit';
 export const postSlice = createSlice({
     name: "posts",
     initialState: [
-        { title: "",text:"",imgUrl:"",link:"",tags:"",vote:0}
+        { title: "",text:"",imgUrl:"",link:"",tags:"",vote:0,source:""}
     ],
     reducers: {
         addPost: (state, action) => {
-            state.push(action.payload.post);
+            console.log(action.payload,"post added")
+            const found = state.find(x=>x.link==action.payload.link);
+            if(found) return state;
+            state=[...state,action.payload.post];
 
             return state;
+        },
+        removeDuplicatePosts(state,action){
+            console.log("removing duplicate posts")
+            return state.reduce((acc:any[],item:any)=>{
+                if(!acc.find((x:any)=>x.link==item.link&&x.source==item.source)){
+                    acc.push(item);
+                }
+                return acc;
+            },[])
         },
         removePost: (state, action) => {
             return state.filter(x => x.link !== action.payload.link);
@@ -21,18 +33,24 @@ export const postSlice = createSlice({
             return state;
         },
         updateFeed:(state, action)=>{
+            console.log("update feed");
             const feed = action.payload.feed;
-            
-            const next:any[]= Array.from(new Set([...state,...feed]))
+            const unique = feed.filter((x:any)=>!state.some(y=>y.link==x.link&&y.source==x.source))
+            const next:any[]=[...state,...unique]
             return next;
 
         },
         hydrateVotedContent:(state,action)=>{
-            return action.payload
+            return action.payload.reduce((acc:any[],item:any)=>{
+                if(!acc.find((x:any)=>x.link==item.link)){
+                    acc.push(item);
+                }
+                return acc;
+            },[])
         },
     },
 });
-export const { addPost, removePost,updatePostVote,updateFeed,hydrateVotedContent } = postSlice.actions;
+export const { addPost, removePost,updatePostVote,updateFeed,hydrateVotedContent,removeDuplicatePosts } = postSlice.actions;
 export const selectPosts = (state: any) => {
     return state.posts;
 }

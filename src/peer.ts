@@ -1,9 +1,7 @@
-import { useRef } from 'react';
 import {Peer} from 'peerjs';
-import { useSelector } from 'react-redux';
 import Get_Shuffled from './utils/shuffle';
 import {updateFeed} from './slices/postSlice';
-import {selectPeerByID, updateStateOfPeer, addPeer,addNewPeers } from './slices/peerSlice';
+import {updateStateOfPeer, addPeer,addNewPeers } from './slices/peerSlice';
 import store from './store';
 function CreatePeer(id:string, callback:any){
     let peer = new Peer(id);
@@ -15,8 +13,8 @@ class PeerNet{
     id:string;
     dispatch:any=store.dispatch;
     pool:any;
-    constructor(saved_id:string){
-        this.id = import.meta.env.VITE_PEERID||saved_id||`peer-${crypto.randomUUID()}`;
+    constructor(){
+        this.id = import.meta.env.VITE_PEERID||`peer-${crypto.randomUUID()}`;
         console.log(this.id,"is id")
         this.peer=null;
     }
@@ -25,8 +23,8 @@ class PeerNet{
     }
 
     filterSeenFeed(feed:any[]){
-        const filterlist = store.getState().posts.filter(x=>x.vote!=0);
-        return feed.filter((x:any)=>!filterlist.some((y:any)=>y.link===x.link));
+        const filterlist = store.getState().posts;
+        return feed.filter((x:any)=>!filterlist.some((y:any)=>y.link===x.link)).map((x:any)=>({...x,vote:0}));
     }
     updateFeed(feed:any[],source:string){
         console.log("feed data from",source);
@@ -52,11 +50,19 @@ class PeerNet{
         }
     }
     init(init_host:string){
-
-        if(init_host!=this.id)this.dispatch(addPeer({peer:init_host,connected:false,score:0}));
+        const peer:any = {peer:init_host,connected:false,score:0}
+        const condition:boolean = init_host!==this.id; 
+        console.log("peer",peer,condition);
+        if(condition){
+            this.dispatch(addPeer(peer));
+            return [peer]
+        }
+        return []
+    }
+    setPeer(value:any){
+        this.peer=value;
     }
     connect_to_peer(id:string){
-
         console.log("this is:",id,"is id of connection")
         const conn = this.peer.connect(id);
         conn.on("open",()=>{
@@ -93,47 +99,48 @@ class PeerNet{
     ConReceives(conn:any,id:string){
             conn.on('data',async(data:any)=>{
                 if(data.key=="peers"){
-                    console.log("peers data from",id);
+                    console.log("peers called from",id);
                     this.updatePeers(data.peers,id)
                 }
                 if(data.key=="feed"){
-                    console.log("feed data from",id);
+                    console.log("feed called from",id);
                     const new_feed = this.filterSeenFeed(data.feed);
-                    this.updateFeed(new_feed,id);
+                    const flat_feed = new_feed.map(x=>({...x,vote:0}));
+                    this.updateFeed(flat_feed,id);
                 }
                 if(data.key=="get_feed"){
+                    console.log("get_feed called from",id);
+
                     const feed = store.getState().posts.filter(x=>x.vote>0);
                    conn.send({key:"feed",feed});
                 }
                 if(data.key=="get_peers"){
-
+                    console.log("get_feed called from",id);
                     const active = store.getState().peers.filter(x=>x.state)
                     const peers = Get_Shuffled(active,100);
                     conn.send({key:"peers",peers});
                 }
                 if(data.key=="notify"){
-                    console.log("notification heard")
+                    console.log("notification called from",id)
                     if(await this.isNew(data.post)){
-                        this.push_to_feed(data);
-                        this.notify(data)
+                        this.push_to_feed(data.post,data.source);
+                        this.notify(data.post,data.source)
                     }
                 }
         })
     }
     async isNew(post:any){
-        const rawJson = localStorage.getItem('peer-net/data')||'{upvotes:[{"link":""}]}';
-        const data = JSON.parse(rawJson);
-        return data.upvotes.every((x:any)=>x.link!=post.link)&&
-        data.downvotes.every((x:any)=>x.link!=post.link)&&
-        data.feed.every((x:any)=>x.link!=post.link)
+        const posts = store.getState().posts;
+        return posts.every((x:any)=>x.link!=post.link)
     }
-    push_to_feed(data:any){
-        this.updateFeed([data.post],data.source)
+    push_to_feed(post:any,source:string){
+        this.updateFeed([post],source)
     }
     ConSends(conn:any){
         console.log("sending ")
         this.get_peers(conn);
         this.get_feed(conn);
+        this.show_feed(conn);
     }
     get_peers(conn:any){
         conn.send({key:"get_peers"});
@@ -145,48 +152,58 @@ class PeerNet{
             this.get_feed(c);
         }
     }
+    show_feed(conn:any){
+        console.log(this.peer,conn); 
+        const feed = store.getState().posts.filter(x=>x.vote>0);
+        conn.send({key:"feed",feed});
+
+    }
     get_feed(conn:any){
         console.log(this.peer,conn); 
         conn.send({key:"get_feed"});
     }
-    connect(peers:any[]){
-        console.log("start");
-        if(peers.length==0) this.init((import.meta.env.VITE_PEER0||""));
+    async _initPeer(peers:any[]){
+        let success = true;
         let peer:any = CreatePeer(this.id,()=>{
-            this.peer=peer;
+            this.setPeer(peer);
+            console.log("peer created and heard!!!!")
+            console.log("peers, length",peers.length,peers.length==0);
+            
             try{
-                if(peers[0].peer==this.id) throw "Skipping peer connect as this is a boot node"
-                if(peers.length==0) throw "skipping peer connect as no peers are present"
-                for(const t of peers){
-                    console.log("connecting")
-                    this.connect_to_peer(t.peer);
-                }   
+            if(peers.length==0){ 
+                console.log("no peers");
+                throw ("skipping peer connect as no peers are present")
+            }
+            for(const t of peers){
+                console.log("connecting",t,"to that")
+                this.connect_to_peer(t.peer);
+            }   
             }catch(e){
                 console.log(e);
+                console.log(peers);
                 console.log("boot node mode detected")
             }
             peer.on('connection',(conn:any)=>{
                 this.updateConnStatus(conn,true)
-                console.log("connection heard");
-
+                console.log("connection heard from",conn.peer);
                 this.ConReceives(conn,conn.peer);
                 if(conn.peer.startsWith('peer-')) this.updatePeers([conn],conn.peer);
             })
-    
+                
         })
+    }
+
+    connect(peers:any[]){
+        console.log("start",peers);
+        if(peers.length==0) peers=this.init((import.meta.env.VITE_PEER0||""));
+        console.log(peers.length,peers);
+        this._initPeer(peers);
         
         
     } 
-    notify(post:any){
-        const active = store.getState().peers.filter(x=>x.state)
-        console.log("notification sending")
-
-        for(const t of active){
-            const conn = this.peer.connect(t.peer);
-                conn.on("connection",(conn:any)=>{
-                    conn.send({key:"notify",post,source:this.id})
-                })
-            
+    notify(post:any,source:string){
+        for(const conn of this.pool.current){
+            conn.send({key:"notify",post,source})
         }
     }
 
