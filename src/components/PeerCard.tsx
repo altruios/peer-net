@@ -22,6 +22,30 @@ function PeerCard(props:any) {
                     {peer.peer};
                 </span>
                 <button 
+                className="Btn"
+    
+                onClick={() =>{          
+
+                    PEER_NET.get_feed_from(peer);
+                }}>
+                   get feed from peer
+                </button>
+
+
+                <button 
+                className="Btn"
+    
+                onClick={() =>{                  
+                    PEER_NET.get_peers_of(peer);
+                }}>
+                get peers
+                </button>
+
+
+
+
+
+                <button 
                 className="Remove-Btn"
     
                 onClick={() =>{                  

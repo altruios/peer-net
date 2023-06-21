@@ -18,11 +18,12 @@
     border-width:10px;
     display:flex;
     flex-flow: row nowrap;
-    width:auto;
+    width:90%;
+
     min-height:10%;
     justify-content: center;
     align-items: center;
-    margin:1.5rem;
+    margin:1.2rem;
 }
 .upvoteBtn{
     background-color: green;
@@ -53,6 +54,9 @@
     min-width: 30%;
     overflow-y: scroll;
     width:100%;
+
+    justify-content: center;
+    align-items: center;
     
 }
 .card-img{
@@ -83,7 +87,14 @@
     flex-flow: column nowrap;
     flex-grow:1;
     border:solid rgb(25, 134, 10);
+    border-inline:unset;
     background-color:rgb(64, 57, 70);
+    font-size:5rem;
+    padding: 0rem;   
+    width:80%;
+
+    align-content: center;
+    
 }
 
 .PeerCards{
@@ -170,17 +181,44 @@
 .card-body{
     display:flex;
     flex-flow:row;
-    justify-content: center;
+    justify-content: space-between;
+    width:100%;
+
 }
 .card-title{
-    display: flex;
+    display: block;
     border:solid green;
-    font-size:larger;
+    margin:0;
+    flex-grow:1;
+    font-size:7rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width:auto;
+    overflow: hidden;
 }
 .card-text{
     display:flex;
     border:solid red;
+    margin:0;
+    flex-grow:1;
+    justify-content: center;
+    width:80%;
+    overflow:hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
+.card-source{
+    display:block;
+    border:solid blue;
+    margin:0;
+    padding-right:3rem;
+    font-size:3rem;
+    width: 20%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow:hidden;
+}   
+
 .Peers{
     background:red;
     display: flex;
@@ -215,7 +253,6 @@ justify-content: center;
 
 
 .vertical-flex{
-
     display:flex;
     flex-flow: column nowrap;
     justify-content: center;

@@ -22,7 +22,7 @@ export const postSlice = createSlice({
                 return acc;
             },[])
         },
-        clearPosts:(state,action)=>{
+        clearPosts:()=>{
             return []
         },
         removePost: (state, action) => {

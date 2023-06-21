@@ -1,4 +1,4 @@
-import {Peer} from 'peerjs';
+import {Peer, PeerErrorType} from 'peerjs';
 import Get_Shuffled from './utils/shuffle';
 import {updateFeed} from './slices/postSlice';
 import {updateStateOfPeer, addPeer,addNewPeers } from './slices/peerSlice';
@@ -96,15 +96,20 @@ class PeerNet{
         console.log("conn",conn,"status",state);
         this.dispatch(updateStateOfPeer({peer:conn.peer,connected:state}));
         console.log(this.pool.current,"updating conn status");
+        if(state==false){
+            this.disconnect(conn.peer);
+            return;
+        }
         const found = this.pool.current.find((x:any)=>x.peer==conn.peer);
         if(!found) this.pool.current.push(conn);
-        
+        else{console.log("already found, skipping updating",conn.peer,"to ",true)}
         console.log(this.pool);
     }
     send_peers_to_peer(conn:any){
         const active = store.getState().peers;
-        console.warn("sending peers to peer",conn.peer);
-        conn.send({key:"peers",peers:active})
+        const peers = active.filter(x=>x.score!=-1);
+        console.warn("sending peers:",peers, "to peer",conn.peer);
+        conn.send({key:"peers",peers})
     }
     ConReceives(conn:any,id:string){
             const blocked = store.getState().peers.filter(x=>x.score==-1);
@@ -261,6 +266,27 @@ class PeerNet{
             this.pool=this.pool.filter((x:any)=>x.peer==peer.peer);
             console.log("successfully disconnected");
         }
+    }
+    get_peers_of(peer:any){
+        this._get_of(peer,(conn:any)=>{
+            conn.send({key:"get_peers"})
+        })
+    }
+    _get_of(peer:any,callback:any){
+        const conn = this.pool.current.find((x:any)=>x.peer==peer.peer);
+        if(conn){
+            callback(conn);
+        }else{
+            console.log("peer,",peer);
+            console.error("peer not in pool");
+            console.log(this.pool.current.map((x:any)=>x.peer));
+            console.log("\n\n\n");
+        }
+    }
+    get_feed_from(peer:any){
+        this._get_of(peer,(conn:any)=>{
+            conn.send({key:"get_feed"});
+        })
     }
 
 }

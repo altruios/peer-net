@@ -14,7 +14,19 @@ return (<div className='Link-Card'
             className="upvoteBtn"
             onClick={() =>{
                 console.log(data,"is changing");
-                dispatch(updatePostVote({link:data.link,vote:data?.vote!==1?1:0}))
+                const vote = data?.vote!==1?1:0;
+                dispatch(updatePostVote({link:data.link,vote}))
+                if(vote==1){
+                    const post = {
+                        title:data?.title,
+                        text:data?.text,
+                        link:data?.link,
+                        source:data?.source,
+                        image:data?.image
+                    }
+                    PEER_NET.notify(post,data?.source);
+                }
+                
             }}>
                 ↑
             </button>
@@ -23,8 +35,8 @@ return (<div className='Link-Card'
             <div className={`Link-Card-Content ${p.type}`}
                 onClick={()=>setIsOpen(!isOpen)}
                 >
-                <div className="card-body">
                     <p className="card-title">{data?.title||data.link}</p>
+                <div className="card-body">
                     <p className="card-text">{data.text||data?.link}</p>
                     <p className="card-source">{data.source}</p>
                 </div>
