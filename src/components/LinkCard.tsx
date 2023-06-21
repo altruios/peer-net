@@ -7,6 +7,7 @@ const p = props.props;
 const data = p.link;
 const [isOpen,setIsOpen]= useState(false);
 const dispatch = useDispatch();
+console.log("link card data",data);
 return (<div className='Link-Card'
 > 
             <button 
@@ -23,7 +24,7 @@ return (<div className='Link-Card'
                 onClick={()=>setIsOpen(!isOpen)}
                 >
                 <div className="card-body">
-                    <h5 className="card-title">{data?.title||data.link}</h5>
+                    <p className="card-title">{data?.title||data.link}</p>
                     <p className="card-text">{data.text||data?.link}</p>
                     <p className="card-source">{data.source}</p>
                 </div>

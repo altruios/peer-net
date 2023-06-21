@@ -107,6 +107,12 @@ class PeerNet{
         conn.send({key:"peers",peers:active})
     }
     ConReceives(conn:any,id:string){
+            const blocked = store.getState().peers.filter(x=>x.score==-1);
+            if(blocked.find(x=>x.peer==conn.peer)){
+                console.log("blocking connection of peer",id);
+                conn.disconnect();
+                return;
+            }
             conn.on('data',async(data:any)=>{
                 console.log("raw data",data);
                 if(data.key=="hello"){
@@ -129,6 +135,7 @@ class PeerNet{
            //         console.log("get_feed called from",id);
 
                     const feed = store.getState().posts.filter(x=>x.vote>0);
+                    console.log(feed,"is feed");
                    conn.send({key:"feed",feed});
                 }
                 if(data.key=="get_peers"){ 
@@ -217,6 +224,10 @@ class PeerNet{
             peer.on('connection',(conn:any)=>{
                 console.log("connection heard from",conn.peer);
                 this.updateConnStatus(conn,true)
+                if(this.is_blocked(conn)){
+                    this.updateConnStatus(conn,false);
+                    this.disconnect(conn);
+                }
                 this.ConReceives(conn,conn.peer);
                 if(conn.peer.startsWith('peer-')) this.updatePeers([conn],conn.peer);
                 this.send_peers(conn);
@@ -224,7 +235,9 @@ class PeerNet{
                 
         })
     }
-
+    is_blocked(conn:any){
+        return store.getState().peers.find(x=>x.peer==conn.peer);
+    }
     connect(peers:any[]){
         console.log("start",peers);
         if(peers.length==0) peers=this.init((import.meta.env.VITE_PEER0||""));
@@ -236,6 +249,17 @@ class PeerNet{
     notify(post:any,source:string){
         for(const conn of this.pool.current){
             conn.send({key:"notify",post,source})
+        }
+    }
+    disconnect(peer:any){
+        console.log("attempting to disconnect",peer);
+        console.log(this.pool.current);
+        const found = this.pool.current.find((x:any)=>x.peer==peer.peer);
+        console.log("found",found)
+        if(found){
+            found.close();
+            this.pool=this.pool.filter((x:any)=>x.peer==peer.peer);
+            console.log("successfully disconnected");
         }
     }
 

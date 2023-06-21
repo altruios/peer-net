@@ -30,11 +30,18 @@ export const peerSlice = createSlice({
             return state;
         },
         updateScoreOfPeer:(state,action)=>{
-            const found = state.find(x => x.peer == action.payload.peer);
+            const found = state.find(x => x.peer == action.payload.peer.peer);
+            console.log("score update");
+            console.log(action.payload.peer,":is peer");
             if (found) {
+                console.log("found",found)
                 found.score = action.payload.score;
+                
             }
             return state;
+        },
+        clearPeers:()=>{
+            return [];
         },
         hydratePeers:(state,action)=>{
             const peers = action.payload;
@@ -45,17 +52,33 @@ export const peerSlice = createSlice({
         },
     },
 });
-export const { addPeer, removePeer,updateStateOfPeer,updateScoreOfPeer,addNewPeers,hydratePeers} = peerSlice.actions;
+export const { addPeer,clearPeers, removePeer,updateStateOfPeer,updateScoreOfPeer,addNewPeers,hydratePeers} = peerSlice.actions;
 export const selectPeers = (state: any) => {
     return state.peers;
 }
+
 export const selectActivePeers = (state: any) => {
     return state.peers.filter((x:any)=>x.state);
 }
 export const selectPeersWithConn = (state: any) => {
     return state.peers.filter((x:any)=>x.conn);
 }
+export const selectUnScoredPeers = (state: any) => {
+    return state.peers.filter((x:any)=>x.score==null||x.score==0||x.score==undefined);
+}
+export const selectScoredPeers = (state: any) => {
+    return state.peers.filter((x:any)=>!(x.score==null||x.score==0||x.score==undefined));
+}
+export const selectSavedPeers = (state: any) => {
+    return state.peers.filter((x:any)=>x.score==1);
+}
+export const selectAvoidPeers = (state: any) => {
+    return state.peers.filter((x:any)=>x.score==-1);
+}
 export const selectPeerByID = (key:any)=>(state:any)=>{
     return state.peers.filter(((x:any)=>x.peer==key))
+}
+export const selectNotBlockedPeers = (state:any)=>{
+    return state.peers.filter((x:any)=>x.score!=-1);
 }
 export default peerSlice.reducer;

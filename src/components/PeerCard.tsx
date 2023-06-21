@@ -1,18 +1,21 @@
 import { useDispatch } from "react-redux";
-import { updateScoreOfPeer } from "../slices/peerSlice";
+import { updateScoreOfPeer, updateStateOfPeer } from "../slices/peerSlice";
+import PEER_NET from "../PEER_NET";
 
 function PeerCard(props:any) {
     const peer = props.peer;
     const dispatch = useDispatch();
-
-    return (<div className={`Peer-Card ${peer?.state}`}> 
+    const peerScore =Number(peer.score)||0;
+    return (<div className={`Peer-Card ${peer?.connected?"up":"down"}`}> 
             
                 <button 
                 className="Keep-Btn"
                 onClick={() =>{
-                    dispatch(updateScoreOfPeer({peer,score:1}));
+                    const score:number = peerScore==1?0:1;
+
+                    dispatch(updateScoreOfPeer({peer,score}));
                 }}>
-                    save
+                    {!peerScore?"save":"forget"}
                 </button>
                 <span 
                 className="Peer-text">
@@ -22,10 +25,14 @@ function PeerCard(props:any) {
                 className="Remove-Btn"
     
                 onClick={() =>{                  
-                
-                    dispatch(updateScoreOfPeer({peer,score:-1}));
+                    const score:any = peerScore==-1?0:-1
+                    console.log("score==",score,score==-1);
+                    dispatch(updateScoreOfPeer({peer,score}));
+                    dispatch(updateStateOfPeer({peer,connected:false}))
+                    score==-1?
+                    PEER_NET.disconnect(peer):console.log("maybe reconnect here");
                 }}>
-                    remove
+                    {peerScore>-1?"avoid":"re-allow"}
                 </button>
     
             </div>

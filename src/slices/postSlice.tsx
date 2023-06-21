@@ -22,6 +22,9 @@ export const postSlice = createSlice({
                 return acc;
             },[])
         },
+        clearPosts:(state,action)=>{
+            return []
+        },
         removePost: (state, action) => {
             return state.filter(x => x.link !== action.payload.link);
         },
@@ -50,7 +53,7 @@ export const postSlice = createSlice({
         },
     },
 });
-export const { addPost, removePost,updatePostVote,updateFeed,hydrateVotedContent,removeDuplicatePosts } = postSlice.actions;
+export const { addPost, clearPosts,removePost,updatePostVote,updateFeed,hydrateVotedContent,removeDuplicatePosts } = postSlice.actions;
 export const selectPosts = (state: any) => {
     return state.posts;
 }

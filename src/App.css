@@ -14,7 +14,7 @@
 .Link-Card{
     border:solid rgb(118, 146, 124);
     border-radius: 135px;
-    background-color: rgb(1, 15, 2);
+    background-color: rgb(44, 33, 56);
     border-width:10px;
     display:flex;
     flex-flow: row nowrap;
@@ -81,15 +81,16 @@
 .Link-Card-Content{
     display:flex;
     flex-flow: column nowrap;
-    align-items: center;
-    flex-basis:1;
     flex-grow:1;
     border:solid rgb(25, 134, 10);
+    background-color:rgb(64, 57, 70);
 }
 
 .PeerCards{
     border:solid green;
     border-width: 10px;;
+    display:flex;
+    flex-flow: column nowrap;
 }
 .Peer-Card{
     border:solid red;
@@ -166,3 +167,56 @@
     height:10rem;
     width:80%;
 }
+.card-body{
+    display:flex;
+    flex-flow:row;
+    justify-content: center;
+}
+.card-title{
+    display: flex;
+    border:solid green;
+    font-size:larger;
+}
+.card-text{
+    display:flex;
+    border:solid red;
+}
+.Peers{
+    background:red;
+    display: flex;
+    flex-flow: column nowrap;
+    width:fit-content;
+}
+.Saved{
+    display:flex;
+    border:solid green;
+
+}
+
+
+.Avoid{
+    display:flex;
+    border:solid purple;
+    margin:0 auto;
+}
+
+.UnScored{
+    display:flex;
+    border:solid purple;
+
+
+}
+.horizontal-flex{
+display:flex;
+flex-flow: row nowrap;
+justify-content: center;
+}
+
+
+
+.vertical-flex{
+
+    display:flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    }

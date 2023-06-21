@@ -2,7 +2,7 @@ import { MouseEvent, useState,useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import styled from 'styled-components'
 import { addPost } from "../slices/postSlice";
-import PEERNET from "../PEER_NET";
+import PEER_NET from "../PEER_NET";
 const Container = styled.dialog`
   width: 40%;
   border-radius: 8px;
@@ -107,9 +107,10 @@ const PeerPostLink = (props:any)=>{
             image:newImage,
             text:newText,
             vote:1,
+            source:PEER_NET.id
         }
-        dispatch(addPost({post,source:PEERNET.id}))
-        PEERNET.notify(post,PEERNET.id);
+        dispatch(addPost({post,source:post.source}))
+        PEER_NET.notify(post,PEER_NET.id);
         onClose();
     };
     const onClose=()=>{
