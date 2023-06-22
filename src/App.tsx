@@ -94,7 +94,7 @@ function App() {
         };
     }, [isConnected]);
 
-    const handleTabChange = (e, tabIndex) => {
+    const handleTabChange = (e:any, tabIndex:number) => {
         console.log(tabIndex);
         setTabIndex(tabIndex);
       };
@@ -126,7 +126,7 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
     return (
         <>
         <CssBaseline />
-        <AppBar position='relative' align="center">
+        <AppBar position='relative' sx={{ justifyContent: 'center' }}>
             <Typography variant='h1'>peer net</Typography>
             <Toolbar>
                 <Typography variant="h6">
