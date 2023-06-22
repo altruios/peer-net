@@ -110,6 +110,11 @@ const nuke = ()=>{
  
             <h1>peer net</h1>
             <h1>node:{PEER_NET?.id}</h1>
+            <div>
+                {
+                    PEER_NET?.pool?.current?.map((x:any)=>x?.peer)?.join(", ")
+                }
+            </div>
         <div>
         <button onClick={() => setIsOpened(true)}>new post</button>
         <button onClick={() => nuke()}>erase json data</button>

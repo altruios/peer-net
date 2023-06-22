@@ -54,7 +54,7 @@ function PeerCard(props:any) {
                     dispatch(updateScoreOfPeer({peer,score}));
                     dispatch(updateStateOfPeer({peer,connected:false}))
                     score==-1?
-                    PEER_NET.disconnect(peer):console.log("maybe reconnect here");
+                    PEER_NET.disconnect(peer):PEER_NET.connect_to(peer);
                 }}>
                     {peerScore>-1?"avoid":"re-allow"}
                 </button>
