@@ -1,6 +1,12 @@
-import './App.css'
 import { useState,useEffect,useRef } from 'react'
 import { useSelector,useDispatch } from 'react-redux';
+import Button from '@mui/material/Button';
+import { Typography ,AppBar,Container,
+    Card,CardActions,CardContent,CardMedia,
+    CssBaseline,Grid,Toolbar,
+    Tabs,Tab,Box} from '@mui/material';
+    import TabPanel from '@mui/lab/TabPanel';
+
 import { 
     removePeer,
     selectActivePeers,
@@ -24,8 +30,7 @@ import { removePost,
 
 
 function App() {
-    const [showDownVotes,setShowDownVotes]=useState<boolean>(false);
-    const [showUpVotes,setShowUpVotes]=useState<boolean>(false);
+    const [tabIndex,setTabIndex]=useState(0)
     const [isOpened, setIsOpened] = useState(false);
     const [isLoaded,setIsLoaded]=useState(false);
     const [isConnected,setIsConnected]=useState(false);
@@ -89,7 +94,10 @@ function App() {
         };
     }, [isConnected]);
 
-    
+    const handleTabChange = (e, tabIndex) => {
+        console.log(tabIndex);
+        setTabIndex(tabIndex);
+      };
 
     useEffect(()=>{
    //     console.log("storing data in:");
@@ -105,64 +113,72 @@ const nuke = ()=>{
     dispatch(clearPosts());
     dispatch(clearPeers());
 }
+
+const getFeedProps = (feed:any[],name:string,type:string)=>{
+    return {
+        className:name,
+        props:{
+            feed:feed?.map((x:any)=>({link:x,type})),
+            name
+        }
+    }
+}
     return (
-        <div className="main">
- 
-            <h1>peer net</h1>
-            <h1>node:{PEER_NET?.id}</h1>
-            <div>
-                {
-                    PEER_NET?.pool?.current?.map((x:any)=>x?.peer)?.join(", ")
-                }
+        <>
+        <CssBaseline />
+        <AppBar position='relative' align="center">
+            <Typography variant='h1'>peer net</Typography>
+            <Toolbar>
+                <Typography variant="h6">
+                    
+                    {PEER_NET?.id}
+                    </Typography>
+            
+                <Button variant="contained" onClick={() => setIsOpened(true)}>new post</Button>
+                <Button variant="contained" onClick={()=>{getFeed(connections.current)}}>get feed</Button>
+            <div className="main-title-options">
+                <Button variant="outlined" onClick={() => nuke()}>erase json data</Button>
+                <Typography variant="h5">
+
+                    peer-
+                    <input></input>
+                </Typography>
+                
+                    <Button variant="contained">connect to specific peer</Button>
             </div>
-        <div>
-        <button onClick={() => setIsOpened(true)}>new post</button>
-        <button onClick={() => nuke()}>erase json data</button>
-
+                </Toolbar>
+        </AppBar>
+        <main>
+            <Container>
             <PeerPostLink openState={[isOpened,setIsOpened]} />
-            show up voted items:
-            <input type="checkbox" checked={showUpVotes} onChange={(e)=>setShowUpVotes(e.target.checked)}></input>
-            show down voted items:
+  <Tabs value={tabIndex} onChange={handleTabChange} aria-label="basic tabs example">
+    <Tab label="saved"  />
+    <Tab label="feed"  />
+    <Tab label="avoid"  />
+  </Tabs>
+{tabIndex==0&&(<Box sx={{ p: 3 }} >
+<LinkCards {...getFeedProps(upVotes,"upVotes","up")} 
+                
+                
+            />
+</Box>)}
+{tabIndex==1&&(<Box sx={{ p: 3 }} >
+<LinkCards  {...getFeedProps(feed,"feed","")}/>
+</Box>)}
+{tabIndex==2&&(<Box sx={{ p: 3 }} >
+<LinkCards {...getFeedProps(downVotes,"downVotes","down")} />
+</Box>)}
 
-            <input type="checkbox" checked={showDownVotes} onChange={(e)=>setShowDownVotes(e.target.checked)}></input>
-            <button className='btn' onClick={()=>{getFeed(connections.current)}}>get feed</button>
-        </div>
+ 
+
+
             <div className='main-container'>
-            {
-                showUpVotes?<LinkCards 
-                
-                className="upVotes"
-                
-                props={{
-                    feed:upVotes?.map((x:any)=>({link:x,type:"up"})),
-                    name:"upVotes",
-                }}
-                />
-                :null
-            }
-            <LinkCards 
-                className="feed"
-                
-                props={
-                    {
-                    feed:feed.map((x:any)=>({
-                        link:x, type:""})),
-                    name:"feed",
-                    }
-                } 
-            />
-            {showDownVotes?
-            <LinkCards 
-            className="downVotes"
-            props={{
-                feed:downVotes?.map((x:any)=>({link:x,type:"down"})),
-                name:"downVotes",
-            }}
-            />
-            :null}
+       
             </div>
         <PeerCards />
-        </div>
+            </Container>
+        </main>
+    </>
     )
 }
 

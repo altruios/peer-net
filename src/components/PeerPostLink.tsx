@@ -1,6 +1,7 @@
 import { MouseEvent, useState,useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import styled from 'styled-components'
+import {Button} from '@mui/material'
 import { addPost } from "../slices/postSlice";
 import PEER_NET from "../PEER_NET";
 const Container = styled.dialog`
@@ -77,8 +78,8 @@ const DialogModal = ({
       {children}
 
       <Buttons>
-        <button className="Keep-Btn" onClick={proceedAndClose}>Proceed</button>
-        <button className="Remove-Btn" onClick={onClose}>Close</button>
+        <Button  onClick={proceedAndClose}>Proceed</Button>
+        <Button  onClick={onClose}>Close</Button>
       </Buttons>
     </Container>
   );
