@@ -28,21 +28,23 @@ in addition, to see any sort of feed you must populate it with data, this can be
 
 ## todo:
 ```
-update peers section to following:
-    -add visual status of connection
-    -add request new peers button
-update main page:
-    -add button to go to input link section
-add input link section
-    -basic form - saves data to local storage
-    -sends notice of new content to network
+mobile support:
+    - android should work, but iphone will mever be able to access webpage
+    - iphone app development specs/standards:
+        -iphone app.
+desktop app:
+    -clean up for deployment:
+        -see projects for details
+    - electron package
+    - build file for AUR
+
+
 clean up peer fill algorithm:
     - make it faster/balanced load;
+    - test on non-trival network
 add tests
     -tests for correctness
     -tests for security from bad actors
-general clean up
-    -just make it better
 ```
 
 
