@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import { Typography ,AppBar,Container,
     Card,CardActions,CardContent,CardMedia,
     CssBaseline,Grid,Toolbar,
-    Tabs,Tab,Box} from '@mui/material';
+    Tabs,Tab,Box, Badge} from '@mui/material';
     import TabPanel from '@mui/lab/TabPanel';
 
 import { 
@@ -30,20 +30,8 @@ import { removePost,
 
 
 function App() {
-    const [newPeerConnectionText,setNewPeerConnectionText]=useState('')
-    const handle_newPeerText=(peer:string)=>{
-        setNewPeerConnectionText(peer);
-    }
-    const handle_newPeerSubmit=(peer:string)=>{
-        console.log("e",peer);
-        try{
-            PEER_NET.connect_to_peer(`peer-${peer}`)
-        }catch(e:any){
-            console.log(e,"failed to get new peer");
-        }
 
-    }
-    const [tabIndex,setTabIndex]=useState(0)
+    const [tabIndex,setTabIndex]=useState(1)
     const [isOpened, setIsOpened] = useState(false);
     const [isLoaded,setIsLoaded]=useState(false);
     const [isConnected,setIsConnected]=useState(false);
@@ -141,34 +129,53 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
         <CssBaseline />
         <AppBar position='relative' sx={{ textAlign:"center",justifyContent: 'center' }}>
             <Typography variant='h1'>peer net</Typography>
-            <Toolbar>
+            <Toolbar
+            sx={{
+                display:"flex",
+                justifyContent:"space-between",
+            }}>
                 <Typography variant="h6">
                     
                     {PEER_NET?.id}
                     </Typography>
             
-                <Button variant="contained" onClick={() => setIsOpened(true)}>new post</Button>
-                <Button variant="contained" onClick={()=>{getFeed(connections.current)}}>get feed</Button>
+                <Button variant="contained" color="secondary" onClick={() => setIsOpened(true)}>new post</Button>
+                <Button variant="contained" color="secondary" onClick={()=>{getFeed(connections.current)}}>get feed</Button>
             <div className="main-title-options">
                 <Button variant="outlined" onClick={() => nuke()}>erase json data</Button>
-                <Typography variant="h5">
-
-                    peer-
-                    <input onChange={(e)=>handle_newPeerText(e.target.value)} value={newPeerConnectionText}></input>
-                </Typography>
-                
-                    <Button variant="contained" onClick={()=>handle_newPeerSubmit(newPeerConnectionText)}>connect to specific peer</Button>
-            </div>
+                      </div>
                 </Toolbar>
         </AppBar>
         <main>
             <Container>
             <PeerPostLink openState={[isOpened,setIsOpened]} />
-  <Tabs value={tabIndex} onChange={handleTabChange} aria-label="basic tabs example">
-    <Tab label="saved"  />
-    <Tab label="feed"  />
-    <Tab label="avoid"  />
-  </Tabs>
+  <Tabs 
+    value={tabIndex} 
+    onChange={handleTabChange} 
+    aria-label="basic tabs example"
+    >
+   
+    <Tab 
+        style={{marginInline:"10%"}}
+    label="saved"/>
+    
+    <Tab 
+        style={{marginInline:"10%"}}
+    label={<Badge 
+        badgeContent={feed.length} 
+        color="secondary">
+            feed
+    </Badge>}  />
+    
+    <Tab 
+        style={{marginInline:"10%"}}
+    label="avoid"
+    />
+    <Tab
+            style={{marginInline:"10%"}}
+     label="peers"
+/>
+      </Tabs>
 {tabIndex==0&&(<Box sx={{ p: 3 }} >
 <LinkCards {...getFeedProps(upVotes,"upVotes","up")} 
                 
@@ -182,13 +189,14 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
 <LinkCards {...getFeedProps(downVotes,"downVotes","down")} />
 </Box>)}
 
- 
+{tabIndex==3&&(<Box sx={{ p: 3 }} >
+        <PeerCards />
+</Box>)} 
 
 
             <div className='main-container'>
        
             </div>
-        <PeerCards />
             </Container>
         </main>
     </>

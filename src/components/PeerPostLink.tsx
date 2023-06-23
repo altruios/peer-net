@@ -1,89 +1,13 @@
 import { MouseEvent, useState,useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import styled from 'styled-components'
-import {Button} from '@mui/material'
+import {Button, FormControl, Input, InputLabel,Container,ButtonGroup,Dialog, List, Card} from '@mui/material'
 import { addPost } from "../slices/postSlice";
 import PEER_NET from "../PEER_NET";
-const Container = styled.dialog`
-  width: 40%;
-  border-radius: 8px;
-  border: 1px solid #888;
-    color:#00fa00;
-    background-color: rgba(164, 46, 67, 0.607);
-  ::backdrop {
-  }
-`;
 
-const Buttons = styled.div`
-  display: flex;
-  border:solid;
-  border-radius:4rem;
-  justify-content:center;
-  gap: 10rem;
-`;
 
-const isClickInsideRectangle = (e: MouseEvent, element: HTMLElement) => {
-  const r = element.getBoundingClientRect();
 
-  return (
-    e.clientX > r.left &&
-    e.clientX < r.right &&
-    e.clientY > r.top &&
-    e.clientY < r.bottom
-  );
-};
 
-type Props = {
-  title: string;
-  isOpened: boolean;
-  onProceed: () => void;
-  onClose: () => void;
-  children: React.ReactNode;
-};
-
-const DialogModal = ({
-  title,
-  isOpened,
-  onProceed,
-  onClose,
-  children,
-}: Props) => {
-  const ref = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    if (isOpened) {
-      ref.current?.showModal();
-      document.body.classList.add("modal-open"); // prevent bg scroll
-    } else {
-      ref.current?.close();
-      document.body.classList.remove("modal-open");
-    }
-  }, [isOpened]);
-
-  const proceedAndClose = () => {
-    onProceed();
-    onClose();
-  };
-
-  return (
-    <Container
-      ref={ref}
-      onCancel={onClose}
-      onClick={(e:any) =>
-        ref.current && !isClickInsideRectangle(e, ref.current) && onClose()
-      }
-    >
-      <h3>{title}</h3>
-
-      {children}
-
-      <Buttons>
-        <Button  onClick={proceedAndClose}>Proceed</Button>
-        <Button  onClick={onClose}>Close</Button>
-      </Buttons>
-    </Container>
-  );
-};
 
 const PeerPostLink = (props:any)=>{
     const [isOpened,setIsOpened] = props.openState;
@@ -119,31 +43,73 @@ const PeerPostLink = (props:any)=>{
         clear_post();
     }
     return(
-    <DialogModal 
+    <Dialog 
         title="Add link"
-        isOpened={isOpened}
-        onProceed={onProceed}
-        onClose={onClose}>
-            <div className="newForm">
+        open={isOpened}
+        onClose={onClose}
+        sx={{
+            display:"flex",
+            flexFlow:"column nowrap",
+            
+        }}    
+        >
+            <Card variant="outlined"
+                sx={{display:"flex",
+                flexFlow:"column nowrap",
+                paddingInline:"7rem",
+                paddingBlock:"5rem"
 
-            <div className="inputDiv">
-            <label> title</label>
-            <input className='newTitle' value={newTitle} onChange={(e)=>setNewTitle(e.target.value)}></input>
-            </div> 
-            <div className="inputDiv">
-            <label> link</label>
-            <input className="newLink" value={newLink} onChange={(e)=>setNewLink(e.target.value)}></input>
-            </div> 
-            <div className="inputDiv">
-            <label> image-URL</label>
-            <input className="newImage" value={newImage} onChange={(e)=>setNewImage(e.target.value)}></input>
-            </div> 
-            <div className="inputDiv">
-            <label> text</label>
-            <textarea className="newText" value={newText} onChange={(e)=>setNewText(e.target.value)}></textarea>
-            </div> 
+            }}>
 
-            </div>
-        </DialogModal>
+            <FormControl variant="standard"
+              sx={{paddingBlock:"2rem"}}
+          >
+            
+            <InputLabel htmlFor="content-title">title</InputLabel>
+
+            <Input 
+            fullWidth={true}
+                id="content-title" 
+                value={newTitle} 
+                onChange={(e)=>setNewTitle(e.target.value)} />
+            </FormControl>
+
+            <FormControl variant="standard"
+                          sx={{paddingBlock:"2rem"}}
+
+            >
+
+            <InputLabel htmlFor="content-link">link</InputLabel>
+            <Input id="content-link" value={newLink} onChange={(e)=>setNewLink(e.target.value)} />
+            </FormControl>
+            <FormControl variant="standard"
+                          sx={{paddingBlock:"2rem"}}
+                          >
+
+            <InputLabel htmlFor="content-image-URL">image-URL</InputLabel>
+            <Input id="content-image-URL" value={newImage} onChange={(e)=>setNewImage(e.target.value)} />
+            </FormControl>
+            <FormControl variant="standard"
+                          sx={{paddingBlock:"2rem"}}
+                          >
+
+            <InputLabel htmlFor="content-text">text</InputLabel>
+            <Input id="content-text" value={newText} onChange={(e)=>setNewText(e.target.value)} />
+            </FormControl>
+
+            <ButtonGroup
+                sx={{
+                    display:"flex",
+                    justifyContent:"center",
+                    paddingBlock:"2rem"
+                }}
+                >
+
+            <Button onClick={onProceed}>submit</Button>
+            <Button onClick={()=>onClose()}>close</Button>
+            </ButtonGroup>
+                </Card>
+
+        </Dialog>
 )}
 export default PeerPostLink;

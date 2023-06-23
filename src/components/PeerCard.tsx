@@ -1,53 +1,61 @@
 import { useDispatch } from "react-redux";
 import { updateScoreOfPeer, updateStateOfPeer } from "../slices/peerSlice";
 import PEER_NET from "../PEER_NET";
-
+import { Button, ButtonGroup, Card, CardContent, Typography } from "@mui/material";
+import { CardHeader } from "@mui/material";
 function PeerCard(props:any) {
     const peer = props.peer;
     const dispatch = useDispatch();
-    const peerScore =Number(peer.score)||0;
-    return (<div className={`Peer-Card ${peer?.connected?"up":"down"}`}> 
-            
-                <button 
-                className="Keep-Btn"
+    console.log(peer,peer.peer);
+        const peerScore =Number(peer.score)||0;
+    return (<Card variant="outlined"> 
+            <CardHeader 
+            align="center"
+            title={peer.peer}>
+            </CardHeader>
+            <CardContent
+            style={{
+                display:"flex",
+                justifyContent:"center"
+            }}
+            >
+                <ButtonGroup
+                style={{
+                    display:"flex",
+                    justifyContent:"space-between",
+                }}
+                >
+
+                <Button 
                 onClick={() =>{
                     const score:number = peerScore==1?0:1;
-
+                    
                     dispatch(updateScoreOfPeer({peer,score}));
                 }}>
                     {!peerScore?"save":"forget"}
-                </button>
-                <span 
-                className="Peer-text">
-                    {peer.peer};
-                </span>
-                <button 
-                className="Btn"
-    
+                </Button>
+      
+                <Button     
                 onClick={() =>{          
-
+                    
                     PEER_NET.get_feed_from(peer);
                 }}>
-                   get feed from peer
-                </button>
+                   request feed
+                </Button>
 
 
-                <button 
-                className="Btn"
-    
+                <Button                 
                 onClick={() =>{                  
                     PEER_NET.get_peers_of(peer);
                 }}>
-                get peers
-                </button>
+                request peers
+                </Button>
 
 
 
 
 
-                <button 
-                className="Remove-Btn"
-    
+                <Button                 
                 onClick={() =>{                  
                     const score:any = peerScore==-1?0:-1
                     console.log("score==",score,score==-1);
@@ -57,9 +65,11 @@ function PeerCard(props:any) {
                     PEER_NET.disconnect(peer):PEER_NET.connect_to(peer);
                 }}>
                     {peerScore>-1?"avoid":"re-allow"}
-                </button>
+                </Button>
+            </ButtonGroup>
+        </CardContent>
     
-            </div>
+    </Card>
     
                 
             
