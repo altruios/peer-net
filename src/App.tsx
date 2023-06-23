@@ -30,6 +30,19 @@ import { removePost,
 
 
 function App() {
+    const [newPeerConnectionText,setNewPeerConnectionText]=useState('')
+    const handle_newPeerText=(peer:string)=>{
+        setNewPeerConnectionText(peer);
+    }
+    const handle_newPeerSubmit=(peer:string)=>{
+        console.log("e",peer);
+        try{
+            PEER_NET.connect_to_peer(`peer-${peer}`)
+        }catch(e:any){
+            console.log(e,"failed to get new peer");
+        }
+
+    }
     const [tabIndex,setTabIndex]=useState(0)
     const [isOpened, setIsOpened] = useState(false);
     const [isLoaded,setIsLoaded]=useState(false);
@@ -126,7 +139,7 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
     return (
         <>
         <CssBaseline />
-        <AppBar position='relative' sx={{ justifyContent: 'center' }}>
+        <AppBar position='relative' sx={{ textAlign:"center",justifyContent: 'center' }}>
             <Typography variant='h1'>peer net</Typography>
             <Toolbar>
                 <Typography variant="h6">
@@ -141,10 +154,10 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
                 <Typography variant="h5">
 
                     peer-
-                    <input></input>
+                    <input onChange={(e)=>handle_newPeerText(e.target.value)} value={newPeerConnectionText}></input>
                 </Typography>
                 
-                    <Button variant="contained">connect to specific peer</Button>
+                    <Button variant="contained" onClick={()=>handle_newPeerSubmit(newPeerConnectionText)}>connect to specific peer</Button>
             </div>
                 </Toolbar>
         </AppBar>

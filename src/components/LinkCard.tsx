@@ -1,4 +1,4 @@
-import { Typography,CardMedia, Grid,Card, CardHeader, CardContent, CardActionArea, CardActions } from '@mui/material';
+import { Typography,CardMedia, Grid,Card, CardHeader, CardContent, CardActionArea, CardActions, Link } from '@mui/material';
 
 import { useDispatch } from "react-redux";
 import { useState } from "react";
@@ -14,27 +14,41 @@ function LinkCard(props: any) {
     const dispatch = useDispatch();
     console.log("link card data", data);
     return (<Card
+    variant='outlined'
+    style={{
+        border:"solid",
+        borderRadius:"3rem",
+        margin:".1rem"
+    }}
     >
-        <CardHeader title={data?.title || data.link} align="center"/>
-        <CardContent>
-        <Typography variant="body2" color="text.secondary"align="center">
+        <CardHeader title={data?.title || data.link} align="center" />
+        <CardContent 
+                    >
+        <Typography variant="body2" color="text.secondary"align="center" style={{lineHeight:"3rem"}}>
 
             {data.text || data?.link}
         </Typography>
-        <Typography variant="body2" color="text.secondary" align="right">
+        <Link 
+            style = {{display:"flex",justifyContent:"center",lineHeight:"3.5rem"}}
+            href={data?.link}
+            underline="hover">
 
-
-{data.source}
-            </Typography>
-            <div style={{ display:'flex', justifyContent:'center' ,}}>
-
+            {data?.link}
+        </Link>
             <CardMedia
             component="img"
             image={data.image}
             alt={"no image"}
+            
+            style={{border:".1rem inset",maxHeight:"10vh",textAlign:"center"
+       
+        }}
+
             />
-            </div>
-            <CardActions>
+            <CardActions
+                        style={{alignItems:"center",justifyContent: "space-between", display: "flex"}}
+
+            >
 
                 <Button
                     className="Green"
@@ -63,6 +77,11 @@ function LinkCard(props: any) {
                     }}>
                 </Button><ThumbDownOffAltIcon />
             </CardActions>
+                                <Typography variant="body2" color="text.secondary" align="right">
+                        
+                        
+                        {data.source}
+                                    </Typography>
 
         </CardContent>
     </Card>
