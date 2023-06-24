@@ -21,12 +21,13 @@ return (
         padding:"1rem",
         border:".1rem solid",
         marginBottom:"3rem",
-        
+        position:"sticky"
     }}>
 
             <NewPeerFinder />
     </Box>
             <Tabs 
+
     value={tabIndex} 
     onChange={handleTabChange} 
     aria-label="basic tabs example"

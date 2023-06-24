@@ -1,8 +1,11 @@
+import { Stack } from "@mui/material";
 import LinkCard from "./LinkCard";
 function LinkCards(props:any) {
     const p = props.props;
     const feed = p?.feed;
-return (<div className="LinkCards"> 
+return (<Stack
+    overflow="hidden"
+> 
 
 
         {feed?.length>0?feed.map(
@@ -12,7 +15,7 @@ return (<div className="LinkCards">
             props={{link:link.link,type:link.type}}/>)
         :<div className="Link-Card">no items in this feed</div>
         } 
-            </div>
+            </Stack>
 )
         
 }
