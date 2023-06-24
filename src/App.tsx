@@ -51,19 +51,21 @@ function App() {
     const onlinePeers = useSelector(selectActivePeers)
     const notBlockedPeers = useSelector(selectNotBlockedPeers);
     const dispatch = useDispatch();
-    const cleanData = ()=>{
+    const  cleanData = async()=>{
     //    console.log("data",peers)
         dispatch(removePeer({peer:""}))
         dispatch(removePost({link:""}))
         dispatch(removeDuplicatePosts({}))
         const rawJson = localStorage.getItem('peer-net/data')||'{}'
-        const data = JSON.parse(rawJson);
+        const data = await JSON.parse(rawJson);
         dispatch(hydratePeers(data.peers));
+        console.log(data,":data");
+        console.log("peers are from clean data!",data?.peers);
         const uv=(data?.upVotes)?data.upVotes:[];
         const dv=(data?.downVotes)?data.downVotes:[];
         dispatch(hydrateVotedContent([...uv,...dv]))
     }   
-    useEffect(cleanData, []);
+    useEffect(()=>{cleanData()}, []);
     
     useEffect(()=>{
         const tv = peers.length>0&&(peers[0].peer!=="")&&!isLoaded;
@@ -107,8 +109,9 @@ function App() {
         const peersSave = peers.filter((x:any)=>x.score!=undefined&&x.score!=null&&x.score!=0)
    const saveObj = JSON.stringify({upVotes,downVotes,peers:peersSave});     
    localStorage.setItem('peer-net/data',saveObj)
-   console.log("saveobj,",saveObj);
-    },[upVotes,downVotes,peers])
+        const receipt = localStorage.getItem("peer-net/data");
+        console.log(receipt,"is result of save")
+    },[upVotes,downVotes,peers.map((x:any)=>x.score)])
 
 const nuke = ()=>{
     dispatch(clearPosts());
