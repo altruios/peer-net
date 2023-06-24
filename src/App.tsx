@@ -128,12 +128,18 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
     }
 }
     return (
-<Container sx={{
+<div style={{
             height:"100%",
+            width:"100%"
 }}>
     <CssBaseline />
     <PeerPostLink openState={[isOpened,setIsOpened]} />
-    <AppBar position='sticky' sx={{  paddingTop:"5vh",height:"10vh",textAlign:"center",justifyContent: 'center' }}>
+    <AppBar position='sticky' sx={{  
+        paddingTop:"5vh",
+        height:"10vh",
+        textAlign:"center",
+        justifyContent: 'center', 
+        width:"fill"}}>
         <Typography variant='h2'>peer net</Typography>
         <Typography variant="h6">{PEER_NET?.id}</Typography>
         <Tabs 
@@ -163,11 +169,14 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
             />
         </Tabs>
     </AppBar>
-    <Container>
+    <div style={{
+        width:"100%"
+    }}>
         <Box sx={{
                 p:3,
                 height:"70vh",
                 overflowY:"scroll",
+                width:"99%",
                 marginBlock:"5vh"
             }}>
 
@@ -177,12 +186,12 @@ const getFeedProps = (feed:any[],name:string,type:string)=>{
         {tabIndex==3&&( <PeerCards />)}
 
         </Box>
-    </Container>
+    </div>
     <AppBar position='relative' sx={{height:"10vh", bottom:0,textAlign:"center",justifyContent: 'space-between',flexFlow:"row nowrap" }}>
         <Button variant="contained" color="secondary" onClick={() => setIsOpened(true)}>new post</Button>
         <Button variant="contained" color="secondary" onClick={()=>{getFeed(connections.current)}}>get feed</Button>
     </AppBar>
-</Container>
+</div>
     )
 }
 
